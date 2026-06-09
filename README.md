@@ -6,10 +6,12 @@ Open Meme 是一个开源、纯前端的 Meme 生成器。它不需要后端服�
 
 - 浏览本地内置 Meme 模板
 - 按模板名称、ID 或标签搜索
-- 输入多个文本框内容
-- 调整全局字号、颜色、字体和英文大写开关
+- 输入、拖动、缩放、新增和删除文本框
+- 使用 Selected Text Inspector 编辑单个文本框的字体、Font Color、Outline Color、层级和内容
+- 支持 Outline / Shadow / None 效果、ALL CAPS、Bold、Italic、对齐、透明度和自动字号适配
 - 使用 Canvas 生成 PNG 并下载
 - 在支持的浏览器中直接复制生成图片到剪切板
+- 有未导出的编辑时，刷新或关闭页面会触发浏览器提醒
 
 ## 开发
 

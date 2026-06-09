@@ -1,28 +1,75 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { MemeTemplate, TextStyleOptions, TextValues } from '../types';
-import { copyTemplateToClipboard, downloadTemplateImage } from '../utils/canvas';
+import { Rnd } from 'react-rnd';
+import type { EditableTextField, MemeTemplate, TextAlign, TextEffect, TextStyleSettings, VerticalAlign } from '../types';
+import { copyEditableMemeToClipboard, downloadEditableMemeImage } from '../utils/canvas';
+import { createEditableFields, createNewEditableField, resolveTextStyle } from '../utils/textStyles';
 
-const FONT_OPTIONS = ['Impact', 'Arial Black', 'Arial', 'Verdana', 'system-ui'];
+const FONT_OPTIONS = ['Impact', 'Arial Black', 'Arial', 'Verdana', 'Comic Sans MS', 'system-ui'];
+const EFFECT_OPTIONS: TextEffect[] = ['outline', 'shadow', 'none'];
+const TEXT_ALIGN_OPTIONS: TextAlign[] = ['left', 'center', 'right'];
+const VERTICAL_ALIGN_OPTIONS: VerticalAlign[] = ['top', 'middle', 'bottom'];
 
 interface MemeEditorProps {
   template: MemeTemplate;
   onBack: () => void;
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function updateField(fields: EditableTextField[], fieldId: string, updater: (field: EditableTextField) => EditableTextField) {
+  return fields.map((field) => (field.id === fieldId ? updater(field) : field));
+}
+
+function getPreviewText(field: EditableTextField, style: TextStyleSettings) {
+  return style.uppercase ? field.text.toUpperCase() : field.text;
+}
+
+function getPreviewTextStyle(style: TextStyleSettings, scale: number): React.CSSProperties {
+  const strokeWidth = Math.max(0, style.outlineWidth * scale);
+  const previewFontSize = Math.min(style.fontSize, style.maxFontSize);
+
+  return {
+    fontSize: `${previewFontSize * scale}px`,
+    color: style.fontColor,
+    fontFamily: style.fontFamily,
+    fontWeight: style.bold ? 900 : 400,
+    fontStyle: style.italic ? 'italic' : 'normal',
+    justifyContent: style.textAlign === 'left' ? 'flex-start' : style.textAlign === 'right' ? 'flex-end' : 'center',
+    opacity: style.opacity,
+    textAlign: style.textAlign,
+    WebkitTextStroke: style.effect === 'outline' ? `${strokeWidth}px ${style.outlineColor}` : undefined,
+    textShadow:
+      style.effect === 'shadow'
+        ? `${strokeWidth || 3}px ${strokeWidth || 3}px ${Math.max(4, strokeWidth * 2)}px ${style.outlineColor}`
+        : undefined,
+  };
+}
+
+function getVerticalClass(verticalAlign: VerticalAlign) {
+  if (verticalAlign === 'top') {
+    return 'align-top';
+  }
+
+  if (verticalAlign === 'bottom') {
+    return 'align-bottom';
+  }
+
+  return 'align-middle';
+}
+
 export function MemeEditor({ template, onBack }: MemeEditorProps) {
-  const [textValues, setTextValues] = useState<TextValues>(() => {
-    return Object.fromEntries(template.textFields.map((field) => [field.id, field.placeholder]));
-  });
-  const [styleOptions, setStyleOptions] = useState<TextStyleOptions>({
-    fontSize: template.textFields[0]?.fontSize ?? 42,
-    color: template.textFields[0]?.color ?? '#ffffff',
-    fontFamily: 'Impact',
-    uppercase: true,
-  });
+  const [fields, setFields] = useState<EditableTextField[]>(() => createEditableFields(template.textFields));
+  const [selectedFieldId, setSelectedFieldId] = useState(template.textFields[0]?.id ?? '');
   const [statusMessage, setStatusMessage] = useState('');
   const [isBusy, setIsBusy] = useState(false);
   const [previewScale, setPreviewScale] = useState(1);
+  const [imageSize, setImageSize] = useState({ width: 900, height: 600 });
+  const [shouldWarnBeforeUnload, setShouldWarnBeforeUnload] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
+
+  const selectedField = fields.find((field) => field.id === selectedFieldId) ?? null;
 
   useEffect(() => {
     const image = imageRef.current;
@@ -32,10 +79,12 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
 
     const updateScale = () => {
       const naturalWidth = image.naturalWidth || image.width;
-      if (!naturalWidth) {
+      const naturalHeight = image.naturalHeight || image.height;
+      if (!naturalWidth || !naturalHeight) {
         return;
       }
 
+      setImageSize({ width: naturalWidth, height: naturalHeight });
       setPreviewScale(image.clientWidth / naturalWidth);
     };
 
@@ -47,25 +96,102 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
     return () => resizeObserver.disconnect();
   }, [template.url]);
 
-  const previewFields = useMemo(() => {
-    return template.textFields.map((field) => {
-      const text = textValues[field.id] || field.placeholder;
-      return {
-        ...field,
-        text: styleOptions.uppercase ? text.toUpperCase() : text,
-      };
-    });
-  }, [styleOptions.uppercase, template.textFields, textValues]);
+  useEffect(() => {
+    if (!shouldWarnBeforeUnload) {
+      return;
+    }
 
-  const updateText = (fieldId: string, value: string) => {
-    setTextValues((current) => ({ ...current, [fieldId]: value }));
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [shouldWarnBeforeUnload]);
+
+  const sortedFields = useMemo(() => fields.slice().sort((a, b) => a.zIndex - b.zIndex), [fields]);
+
+  const markEdited = () => {
+    setShouldWarnBeforeUnload(true);
+    setStatusMessage('');
   };
 
   const updatePreviewScale = () => {
     const image = imageRef.current;
     if (image && image.naturalWidth) {
+      setImageSize({ width: image.naturalWidth, height: image.naturalHeight });
       setPreviewScale(image.clientWidth / image.naturalWidth);
     }
+  };
+
+  const setFieldValue = (fieldId: string, value: string) => {
+    setFields((current) => updateField(current, fieldId, (field) => ({ ...field, text: value })));
+    markEdited();
+  };
+
+  const setFieldStyle = <K extends keyof TextStyleSettings>(
+    fieldId: string,
+    key: K,
+    value: TextStyleSettings[K],
+  ) => {
+    setFields((current) =>
+      updateField(current, fieldId, (field) => ({
+        ...field,
+        styleOverrides: {
+          ...field.styleOverrides,
+          [key]: value,
+        },
+      })),
+    );
+    markEdited();
+  };
+
+  const addTextField = () => {
+    const nextIndex = fields.length + 1;
+    const nextZIndex = Math.max(0, ...fields.map((field) => field.zIndex)) + 1;
+    const newField = createNewEditableField(nextIndex, imageSize.width, imageSize.height);
+    const field = { ...newField, zIndex: nextZIndex };
+
+    setFields((current) => [...current, field]);
+    setSelectedFieldId(field.id);
+    markEdited();
+  };
+
+  const removeSelectedField = () => {
+    if (!selectedField) {
+      return;
+    }
+
+    const remaining = fields.filter((field) => field.id !== selectedField.id);
+    setFields(remaining);
+    setSelectedFieldId(remaining[0]?.id ?? '');
+    markEdited();
+  };
+
+  const bringSelectedToTop = () => {
+    if (!selectedField) {
+      return;
+    }
+
+    const nextZIndex = Math.max(0, ...fields.map((field) => field.zIndex)) + 1;
+    setFields((current) => updateField(current, selectedField.id, (field) => ({ ...field, zIndex: nextZIndex })));
+    markEdited();
+  };
+
+  const applySelectedStyleToAll = () => {
+    if (!selectedField) {
+      return;
+    }
+
+    const effectiveStyle = resolveTextStyle(selectedField);
+    setFields((current) =>
+      current.map((field) => ({
+        ...field,
+        styleOverrides: effectiveStyle,
+      })),
+    );
+    markEdited();
   };
 
   const runImageAction = async (action: 'download' | 'copy') => {
@@ -74,12 +200,14 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
 
     try {
       if (action === 'download') {
-        await downloadTemplateImage(template, textValues, styleOptions);
+        await downloadEditableMemeImage(template, fields);
         setStatusMessage('图片已开始下载。');
       } else {
-        await copyTemplateToClipboard(template, textValues, styleOptions);
+        await copyEditableMemeToClipboard(template, fields);
         setStatusMessage('图片已复制到剪切板。');
       }
+
+      setShouldWarnBeforeUnload(false);
     } catch (error) {
       const fallback = action === 'copy' ? '复制不可用，请下载图片。' : '生成图片失败，请稍后重试。';
       setStatusMessage(error instanceof Error ? error.message : fallback);
@@ -100,91 +228,81 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
         </div>
       </div>
 
-      <div className="editor-grid">
+      <div className="editor-grid inspector-mode">
         <div className="preview-panel panel">
+          <div className="preview-actions">
+            <button className="secondary-button" type="button" onClick={addTextField}>
+              + Add text box
+            </button>
+          </div>
           <div className="meme-preview">
             <img ref={imageRef} src={template.url} alt={template.name} onLoad={updatePreviewScale} />
-            {previewFields.map((field) => (
-              <div
-                className="preview-text"
-                key={field.id}
-                style={{
-                  left: `${field.x * previewScale}px`,
-                  top: `${field.y * previewScale}px`,
-                  width: `${field.width * previewScale}px`,
-                  height: `${field.height * previewScale}px`,
-                  fontSize: `${styleOptions.fontSize * previewScale}px`,
-                  color: styleOptions.color,
-                  fontFamily: styleOptions.fontFamily,
-                  textAlign: field.align,
-                }}
-              >
-                {field.text}
-              </div>
-            ))}
+            {sortedFields.map((field) => {
+              const style = resolveTextStyle(field);
+              return (
+                <Rnd
+                  bounds="parent"
+                  className={`editable-text-box ${field.id === selectedFieldId ? 'is-selected' : ''}`}
+                  key={field.id}
+                  position={{ x: field.x * previewScale, y: field.y * previewScale }}
+                  size={{ width: field.width * previewScale, height: field.height * previewScale }}
+                  style={{ zIndex: field.zIndex }}
+                  minWidth={60 * previewScale}
+                  minHeight={32 * previewScale}
+                  onClick={(event: React.MouseEvent) => {
+                    event.stopPropagation();
+                    setSelectedFieldId(field.id);
+                  }}
+                  onDragStart={() => setSelectedFieldId(field.id)}
+                  onDragStop={(_, data) => {
+                    setFields((current) =>
+                      updateField(current, field.id, (currentField) => ({
+                        ...currentField,
+                        x: clamp(data.x / previewScale, 0, imageSize.width - currentField.width),
+                        y: clamp(data.y / previewScale, 0, imageSize.height - currentField.height),
+                      })),
+                    );
+                    markEdited();
+                  }}
+                  onResizeStart={() => setSelectedFieldId(field.id)}
+                  onResizeStop={(_, __, ref, ___, position) => {
+                    const width = ref.offsetWidth / previewScale;
+                    const height = ref.offsetHeight / previewScale;
+                    setFields((current) =>
+                      updateField(current, field.id, (currentField) => ({
+                        ...currentField,
+                        width: clamp(width, 40, imageSize.width),
+                        height: clamp(height, 24, imageSize.height),
+                        x: clamp(position.x / previewScale, 0, imageSize.width - width),
+                        y: clamp(position.y / previewScale, 0, imageSize.height - height),
+                      })),
+                    );
+                    markEdited();
+                  }}
+                >
+                  <div className={`preview-text ${getVerticalClass(style.verticalAlign)}`} style={getPreviewTextStyle(style, previewScale)}>
+                    {getPreviewText(field, style)}
+                  </div>
+                </Rnd>
+              );
+            })}
           </div>
         </div>
 
-        <aside className="control-panel panel">
-          <div className="control-section">
-            <h3>文字内容</h3>
-            {template.textFields.map((field) => (
-              <label className="field-control" key={field.id}>
-                <span>{field.placeholder}</span>
-                <textarea
-                  value={textValues[field.id] ?? ''}
-                  onChange={(event) => updateText(field.id, event.target.value)}
-                  placeholder={field.placeholder}
-                  rows={3}
-                />
-              </label>
-            ))}
-          </div>
-
-          <div className="control-section">
-            <h3>样式</h3>
-            <label className="field-control">
-              <span>字号：{styleOptions.fontSize}px</span>
-              <input
-                type="range"
-                min="20"
-                max="100"
-                value={styleOptions.fontSize}
-                onChange={(event) =>
-                  setStyleOptions((current) => ({ ...current, fontSize: Number(event.target.value) }))
-                }
-              />
-            </label>
-            <label className="field-control inline-control">
-              <span>颜色</span>
-              <input
-                type="color"
-                value={styleOptions.color}
-                onChange={(event) => setStyleOptions((current) => ({ ...current, color: event.target.value }))}
-              />
-            </label>
-            <label className="field-control">
-              <span>字体</span>
-              <select
-                value={styleOptions.fontFamily}
-                onChange={(event) => setStyleOptions((current) => ({ ...current, fontFamily: event.target.value }))}
-              >
-                {FONT_OPTIONS.map((font) => (
-                  <option key={font} value={font}>
-                    {font}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="toggle-control">
-              <input
-                type="checkbox"
-                checked={styleOptions.uppercase}
-                onChange={(event) => setStyleOptions((current) => ({ ...current, uppercase: event.target.checked }))}
-              />
-              <span>英文自动大写</span>
-            </label>
-          </div>
+        <aside className="control-panel inspector-panel panel">
+          {selectedField ? (
+            <SelectedTextInspector
+              field={selectedField}
+              effectiveStyle={resolveTextStyle(selectedField)}
+              onTextChange={(value) => setFieldValue(selectedField.id, value)}
+              onStyleChange={(key, value) => setFieldStyle(selectedField.id, key, value)}
+              onRemove={removeSelectedField}
+              onBringToTop={bringSelectedToTop}
+              onApplyToAll={applySelectedStyleToAll}
+            />
+          ) : (
+            <div className="inspector-card empty-inspector">选择或新增一个文本框来编辑属性。</div>
+          )}
 
           <div className="action-row">
             <button className="primary-button" type="button" disabled={isBusy} onClick={() => runImageAction('download')}>
@@ -199,5 +317,157 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
         </aside>
       </div>
     </section>
+  );
+}
+
+interface StyleInspectorProps {
+  title: string;
+  style: TextStyleSettings;
+  onChange: <K extends keyof TextStyleSettings>(key: K, value: TextStyleSettings[K]) => void;
+}
+
+function StyleInspector({ title, style, onChange }: StyleInspectorProps) {
+  return (
+    <div className="inspector-card">
+      <h3>{title}</h3>
+      <label className="inspector-row">
+        <span>Font</span>
+        <select value={style.fontFamily} onChange={(event) => onChange('fontFamily', event.target.value)}>
+          {FONT_OPTIONS.map((font) => (
+            <option key={font} value={font}>
+              {font}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="inspector-row color-row">
+        <span>Font Color</span>
+        <input type="color" value={style.fontColor} onChange={(event) => onChange('fontColor', event.target.value)} />
+      </div>
+      <div className="inspector-row color-row">
+        <span>Outline Color</span>
+        <input type="color" value={style.outlineColor} onChange={(event) => onChange('outlineColor', event.target.value)} />
+      </div>
+      <div className="option-row">
+        <label>
+          <input type="checkbox" checked={style.uppercase} onChange={(event) => onChange('uppercase', event.target.checked)} />
+          ALL CAPS
+        </label>
+        <label>
+          <input type="checkbox" checked={style.bold} onChange={(event) => onChange('bold', event.target.checked)} />
+          <strong>Bold</strong>
+        </label>
+        <label>
+          <input type="checkbox" checked={style.italic} onChange={(event) => onChange('italic', event.target.checked)} />
+          <em>Italic</em>
+        </label>
+      </div>
+      <div className="option-row">
+        {EFFECT_OPTIONS.map((effect) => (
+          <label key={effect}>
+            <input
+              type="radio"
+              name={`${title}-effect`}
+              checked={style.effect === effect}
+              onChange={() => onChange('effect', effect)}
+            />
+            {effect}
+          </label>
+        ))}
+      </div>
+      <label className="inspector-row">
+        <span>Font Size</span>
+        <input type="number" min="12" max="160" value={style.fontSize} onChange={(event) => onChange('fontSize', Number(event.target.value))} />
+      </label>
+      <label className="inspector-row">
+        <span>Outline Width</span>
+        <input type="number" min="0" max="24" value={style.outlineWidth} onChange={(event) => onChange('outlineWidth', Number(event.target.value))} />
+      </label>
+      <label className="inspector-row">
+        <span>Max Font Size (px)</span>
+        <input type="number" min="12" max="180" value={style.maxFontSize} onChange={(event) => onChange('maxFontSize', Number(event.target.value))} />
+      </label>
+      <label className="inspector-row">
+        <span>Text Align</span>
+        <select value={style.textAlign} onChange={(event) => onChange('textAlign', event.target.value as TextAlign)}>
+          {TEXT_ALIGN_OPTIONS.map((align) => (
+            <option key={align} value={align}>
+              {align}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="inspector-row">
+        <span>Vertical Align</span>
+        <select value={style.verticalAlign} onChange={(event) => onChange('verticalAlign', event.target.value as VerticalAlign)}>
+          {VERTICAL_ALIGN_OPTIONS.map((align) => (
+            <option key={align} value={align}>
+              {align}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="inspector-row slider-row">
+        <span>Opacity</span>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={style.opacity}
+          onChange={(event) => onChange('opacity', Number(event.target.value))}
+        />
+        <input
+          type="number"
+          min="0"
+          max="1"
+          step="0.05"
+          value={style.opacity}
+          onChange={(event) => onChange('opacity', Number(event.target.value))}
+        />
+      </label>
+    </div>
+  );
+}
+
+interface SelectedTextInspectorProps {
+  field: EditableTextField;
+  effectiveStyle: TextStyleSettings;
+  onTextChange: (value: string) => void;
+  onStyleChange: <K extends keyof TextStyleSettings>(key: K, value: TextStyleSettings[K]) => void;
+  onRemove: () => void;
+  onBringToTop: () => void;
+  onApplyToAll: () => void;
+}
+
+function SelectedTextInspector({
+  field,
+  effectiveStyle,
+  onTextChange,
+  onStyleChange,
+  onRemove,
+  onBringToTop,
+  onApplyToAll,
+}: SelectedTextInspectorProps) {
+  return (
+    <div className="inspector-card selected-inspector">
+      <div className="inspector-title-row">
+        <h3>Selected Text Inspector</h3>
+        <button className="remove-button" type="button" onClick={onRemove}>
+          remove
+        </button>
+      </div>
+      <label className="field-control inspector-textarea">
+        <span>Content</span>
+        <textarea value={field.text} onChange={(event) => onTextChange(event.target.value)} rows={3} />
+      </label>
+      <StyleInspector title="Text Settings" style={effectiveStyle} onChange={onStyleChange} />
+      <button className="inspector-action" type="button" onClick={onBringToTop}>
+        Bring to top layer
+      </button>
+      <button className="inspector-action full-width" type="button" onClick={onApplyToAll}>
+        Apply these settings to ALL text boxes
+      </button>
+    </div>
   );
 }

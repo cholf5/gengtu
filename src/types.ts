@@ -1,4 +1,6 @@
 export type TextAlign = 'left' | 'center' | 'right';
+export type VerticalAlign = 'top' | 'middle' | 'bottom';
+export type TextEffect = 'outline' | 'shadow' | 'none';
 
 export interface MemeTextField {
   id: string;
@@ -20,11 +22,41 @@ export interface MemeTemplate {
   textFields: MemeTextField[];
 }
 
+export interface TextStyleSettings {
+  fontSize: number;
+  maxFontSize: number;
+  fontColor: string;
+  outlineColor: string;
+  fontFamily: string;
+  uppercase: boolean;
+  bold: boolean;
+  italic: boolean;
+  effect: TextEffect;
+  outlineWidth: number;
+  textAlign: TextAlign;
+  verticalAlign: VerticalAlign;
+  opacity: number;
+}
+
+export type TextStyleOverrides = Partial<TextStyleSettings>;
+
+export interface EditableTextField {
+  id: string;
+  text: string;
+  placeholder: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zIndex: number;
+  styleOverrides: TextStyleOverrides;
+}
+
+export type TextValues = Record<string, string>;
+
 export interface TextStyleOptions {
   fontSize: number;
   color: string;
   fontFamily: string;
   uppercase: boolean;
 }
-
-export type TextValues = Record<string, string>;
