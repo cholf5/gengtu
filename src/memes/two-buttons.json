@@ -1,0 +1,30 @@
+{
+  "id": "two-buttons",
+  "name": "Two Buttons (抉择两难)",
+  "url": "/memes/two-buttons.svg",
+  "tags": ["classic", "choice", "buttons"],
+  "textFields": [
+    {
+      "id": "text_left",
+      "placeholder": "Option A",
+      "x": 92,
+      "y": 250,
+      "width": 265,
+      "height": 110,
+      "fontSize": 34,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_right",
+      "placeholder": "Option B",
+      "x": 542,
+      "y": 250,
+      "width": 265,
+      "height": 110,
+      "fontSize": 34,
+      "color": "#ffffff",
+      "align": "center"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700">
+  <rect width="1000" height="700" fill="#d0ebff"/>
+  <rect y="440" width="1000" height="260" fill="#8ce99a"/>
+  <path d="M0 700 L430 360 L535 360 L1000 700 Z" fill="#495057"/>
+  <path d="M470 700 L500 370 L530 700 Z" fill="#f8f9fa" opacity="0.8"/>
+  <path d="M500 360 C380 310 240 280 80 245" fill="none" stroke="#495057" stroke-width="86" stroke-linecap="round"/>
+  <path d="M510 360 C640 295 800 265 945 230" fill="none" stroke="#495057" stroke-width="86" stroke-linecap="round"/>
+  <rect x="105" y="115" width="280" height="120" rx="14" fill="#fff9db" stroke="#343a40" stroke-width="8"/>
+  <rect x="615" y="95" width="280" height="120" rx="14" fill="#fff9db" stroke="#343a40" stroke-width="8"/>
+  <circle cx="500" cy="336" r="38" fill="#ffd8a8" stroke="#343a40" stroke-width="7"/>
+  <text x="500" y="80" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="54" fill="#212529">WHICH WAY?</text>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <rect width="900" height="600" fill="#f5f0e6"/>
+  <rect x="70" y="220" width="310" height="170" rx="22" fill="#e03131" stroke="#7f1d1d" stroke-width="10"/>
+  <rect x="520" y="220" width="310" height="170" rx="22" fill="#2f9e44" stroke="#14532d" stroke-width="10"/>
+  <circle cx="450" cy="430" r="70" fill="#ffd8a8" stroke="#343a40" stroke-width="8"/>
+  <path d="M425 420 q25 35 50 0" fill="none" stroke="#343a40" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="428" cy="398" r="8" fill="#343a40"/>
+  <circle cx="472" cy="398" r="8" fill="#343a40"/>
+  <text x="450" y="96" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="54" fill="#222">TWO BUTTONS</text>
+  <text x="450" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#5c677d">placeholder meme template</text>
+</svg>

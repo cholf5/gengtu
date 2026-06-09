@@ -1,0 +1,30 @@
+{
+  "id": "top-bottom",
+  "name": "Top / Bottom Text (经典上下文)",
+  "url": "/memes/top-bottom.svg",
+  "tags": ["classic", "caption", "reaction"],
+  "textFields": [
+    {
+      "id": "top_text",
+      "placeholder": "Top text",
+      "x": 80,
+      "y": 45,
+      "width": 740,
+      "height": 130,
+      "fontSize": 56,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "bottom_text",
+      "placeholder": "Bottom text",
+      "x": 80,
+      "y": 720,
+      "width": 740,
+      "height": 130,
+      "fontSize": 56,
+      "color": "#ffffff",
+      "align": "center"
+    }
+  ]
+}
