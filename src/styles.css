@@ -239,6 +239,7 @@ button {
 .meme-preview {
   position: relative;
   width: fit-content;
+  max-width: 100%;
   margin: 0 auto;
   overflow: hidden;
   border-radius: 18px;
@@ -247,7 +248,7 @@ button {
 
 .meme-preview img {
   display: block;
-  max-width: none;
+  max-width: 100%;
   height: auto;
 }
 

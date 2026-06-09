@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MemeTemplate, TextStyleOptions, TextValues } from '../types';
 import { copyTemplateToClipboard, downloadTemplateImage } from '../utils/canvas';
 
@@ -21,6 +21,31 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
   });
   const [statusMessage, setStatusMessage] = useState('');
   const [isBusy, setIsBusy] = useState(false);
+  const [previewScale, setPreviewScale] = useState(1);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const image = imageRef.current;
+    if (!image) {
+      return;
+    }
+
+    const updateScale = () => {
+      const naturalWidth = image.naturalWidth || image.width;
+      if (!naturalWidth) {
+        return;
+      }
+
+      setPreviewScale(image.clientWidth / naturalWidth);
+    };
+
+    updateScale();
+
+    const resizeObserver = new ResizeObserver(updateScale);
+    resizeObserver.observe(image);
+
+    return () => resizeObserver.disconnect();
+  }, [template.url]);
 
   const previewFields = useMemo(() => {
     return template.textFields.map((field) => {
@@ -34,6 +59,13 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
 
   const updateText = (fieldId: string, value: string) => {
     setTextValues((current) => ({ ...current, [fieldId]: value }));
+  };
+
+  const updatePreviewScale = () => {
+    const image = imageRef.current;
+    if (image && image.naturalWidth) {
+      setPreviewScale(image.clientWidth / image.naturalWidth);
+    }
   };
 
   const runImageAction = async (action: 'download' | 'copy') => {
@@ -71,17 +103,17 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
       <div className="editor-grid">
         <div className="preview-panel panel">
           <div className="meme-preview">
-            <img src={template.url} alt={template.name} />
+            <img ref={imageRef} src={template.url} alt={template.name} onLoad={updatePreviewScale} />
             {previewFields.map((field) => (
               <div
                 className="preview-text"
                 key={field.id}
                 style={{
-                  left: `${field.x}px`,
-                  top: `${field.y}px`,
-                  width: `${field.width}px`,
-                  height: `${field.height}px`,
-                  fontSize: `${styleOptions.fontSize}px`,
+                  left: `${field.x * previewScale}px`,
+                  top: `${field.y * previewScale}px`,
+                  width: `${field.width * previewScale}px`,
+                  height: `${field.height * previewScale}px`,
+                  fontSize: `${styleOptions.fontSize * previewScale}px`,
                   color: styleOptions.color,
                   fontFamily: styleOptions.fontFamily,
                   textAlign: field.align,
