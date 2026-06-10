@@ -7,10 +7,13 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:pages": "tsc -b && vite build --base=/open-meme/",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.2.5",
     "@vitejs/plugin-react": "latest",
+    "antd": "^6.4.3",
     "react": "latest",
     "react-dom": "latest",
     "react-rnd": "^10.5.3",
@@ -18,7 +21,11 @@
     "vite": "latest"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "latest",
-    "@types/react-dom": "latest"
+    "@types/react-dom": "latest",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.8"
   }
 }

@@ -1,21 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Rnd } from 'react-rnd';
-import type { EditableTextField, MemeTemplate, TextAlign, TextEffect, TextStyleSettings, VerticalAlign } from '../types';
+import { useEffect, useState } from 'react';
+import type { EditableTextField, MemeTemplate, TextStyleSettings, VerticalAlign } from '../types';
+import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
 import { copyEditableMemeToClipboard, downloadEditableMemeImage } from '../utils/canvas';
 import { createEditableFields, createNewEditableField, resolveTextStyle } from '../utils/textStyles';
-
-const FONT_OPTIONS = ['Impact', 'Arial Black', 'Arial', 'Verdana', 'Comic Sans MS', 'system-ui'];
-const EFFECT_OPTIONS: TextEffect[] = ['outline', 'shadow', 'none'];
-const TEXT_ALIGN_OPTIONS: TextAlign[] = ['left', 'center', 'right'];
-const VERTICAL_ALIGN_OPTIONS: VerticalAlign[] = ['top', 'middle', 'bottom'];
+import { SelectedTextInspector } from './SelectedTextInspector';
+import { TextFieldsPreview } from './TextFieldsPreview';
 
 interface MemeEditorProps {
   template: MemeTemplate;
   onBack: () => void;
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
 }
 
 function updateField(fields: EditableTextField[], fieldId: string, updater: (field: EditableTextField) => EditableTextField) {
@@ -64,37 +57,10 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
   const [selectedFieldId, setSelectedFieldId] = useState(template.textFields[0]?.id ?? '');
   const [statusMessage, setStatusMessage] = useState('');
   const [isBusy, setIsBusy] = useState(false);
-  const [previewScale, setPreviewScale] = useState(1);
-  const [imageSize, setImageSize] = useState({ width: 900, height: 600 });
   const [shouldWarnBeforeUnload, setShouldWarnBeforeUnload] = useState(false);
-  const imageRef = useRef<HTMLImageElement>(null);
+  const { imageRef, imageSize, previewScale, updatePreviewScale } = useImagePreviewScale(template.url);
 
   const selectedField = fields.find((field) => field.id === selectedFieldId) ?? null;
-
-  useEffect(() => {
-    const image = imageRef.current;
-    if (!image) {
-      return;
-    }
-
-    const updateScale = () => {
-      const naturalWidth = image.naturalWidth || image.width;
-      const naturalHeight = image.naturalHeight || image.height;
-      if (!naturalWidth || !naturalHeight) {
-        return;
-      }
-
-      setImageSize({ width: naturalWidth, height: naturalHeight });
-      setPreviewScale(image.clientWidth / naturalWidth);
-    };
-
-    updateScale();
-
-    const resizeObserver = new ResizeObserver(updateScale);
-    resizeObserver.observe(image);
-
-    return () => resizeObserver.disconnect();
-  }, [template.url]);
 
   useEffect(() => {
     if (!shouldWarnBeforeUnload) {
@@ -110,19 +76,9 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [shouldWarnBeforeUnload]);
 
-  const sortedFields = useMemo(() => fields.slice().sort((a, b) => a.zIndex - b.zIndex), [fields]);
-
   const markEdited = () => {
     setShouldWarnBeforeUnload(true);
     setStatusMessage('');
-  };
-
-  const updatePreviewScale = () => {
-    const image = imageRef.current;
-    if (image && image.naturalWidth) {
-      setImageSize({ width: image.naturalWidth, height: image.naturalHeight });
-      setPreviewScale(image.clientWidth / image.naturalWidth);
-    }
   };
 
   const setFieldValue = (fieldId: string, value: string) => {
@@ -235,58 +191,29 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               + Add text box
             </button>
           </div>
-          <div className="meme-preview">
-            <img ref={imageRef} src={template.url} alt={template.name} onLoad={updatePreviewScale} />
-            {sortedFields.map((field) => {
+          <TextFieldsPreview
+            imageRef={imageRef}
+            imageUrl={template.url}
+            imageAlt={template.name}
+            fields={fields}
+            selectedFieldId={selectedFieldId}
+            imageSize={imageSize}
+            previewScale={previewScale}
+            onImageLoad={updatePreviewScale}
+            onSelectField={setSelectedFieldId}
+            onFieldRectChange={(fieldId, rect) => {
+              setFields((current) => updateField(current, fieldId, (field) => ({ ...field, ...rect })));
+              markEdited();
+            }}
+            renderField={(field) => {
               const style = resolveTextStyle(field);
               return (
-                <Rnd
-                  bounds="parent"
-                  className={`editable-text-box ${field.id === selectedFieldId ? 'is-selected' : ''}`}
-                  key={field.id}
-                  position={{ x: field.x * previewScale, y: field.y * previewScale }}
-                  size={{ width: field.width * previewScale, height: field.height * previewScale }}
-                  style={{ zIndex: field.zIndex }}
-                  minWidth={60 * previewScale}
-                  minHeight={32 * previewScale}
-                  onClick={(event: React.MouseEvent) => {
-                    event.stopPropagation();
-                    setSelectedFieldId(field.id);
-                  }}
-                  onDragStart={() => setSelectedFieldId(field.id)}
-                  onDragStop={(_, data) => {
-                    setFields((current) =>
-                      updateField(current, field.id, (currentField) => ({
-                        ...currentField,
-                        x: clamp(data.x / previewScale, 0, imageSize.width - currentField.width),
-                        y: clamp(data.y / previewScale, 0, imageSize.height - currentField.height),
-                      })),
-                    );
-                    markEdited();
-                  }}
-                  onResizeStart={() => setSelectedFieldId(field.id)}
-                  onResizeStop={(_, __, ref, ___, position) => {
-                    const width = ref.offsetWidth / previewScale;
-                    const height = ref.offsetHeight / previewScale;
-                    setFields((current) =>
-                      updateField(current, field.id, (currentField) => ({
-                        ...currentField,
-                        width: clamp(width, 40, imageSize.width),
-                        height: clamp(height, 24, imageSize.height),
-                        x: clamp(position.x / previewScale, 0, imageSize.width - width),
-                        y: clamp(position.y / previewScale, 0, imageSize.height - height),
-                      })),
-                    );
-                    markEdited();
-                  }}
-                >
-                  <div className={`preview-text ${getVerticalClass(style.verticalAlign)}`} style={getPreviewTextStyle(style, previewScale)}>
-                    {getPreviewText(field, style)}
-                  </div>
-                </Rnd>
+                <div className={`preview-text ${getVerticalClass(style.verticalAlign)}`} style={getPreviewTextStyle(style, previewScale)}>
+                  {getPreviewText(field, style)}
+                </div>
               );
-            })}
-          </div>
+            }}
+          />
         </div>
 
         <aside className="control-panel inspector-panel panel">
@@ -317,157 +244,5 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
         </aside>
       </div>
     </section>
-  );
-}
-
-interface StyleInspectorProps {
-  title: string;
-  style: TextStyleSettings;
-  onChange: <K extends keyof TextStyleSettings>(key: K, value: TextStyleSettings[K]) => void;
-}
-
-function StyleInspector({ title, style, onChange }: StyleInspectorProps) {
-  return (
-    <div className="inspector-card">
-      <h3>{title}</h3>
-      <label className="inspector-row">
-        <span>Font</span>
-        <select value={style.fontFamily} onChange={(event) => onChange('fontFamily', event.target.value)}>
-          {FONT_OPTIONS.map((font) => (
-            <option key={font} value={font}>
-              {font}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="inspector-row color-row">
-        <span>Font Color</span>
-        <input type="color" value={style.fontColor} onChange={(event) => onChange('fontColor', event.target.value)} />
-      </div>
-      <div className="inspector-row color-row">
-        <span>Outline Color</span>
-        <input type="color" value={style.outlineColor} onChange={(event) => onChange('outlineColor', event.target.value)} />
-      </div>
-      <div className="option-row">
-        <label>
-          <input type="checkbox" checked={style.uppercase} onChange={(event) => onChange('uppercase', event.target.checked)} />
-          ALL CAPS
-        </label>
-        <label>
-          <input type="checkbox" checked={style.bold} onChange={(event) => onChange('bold', event.target.checked)} />
-          <strong>Bold</strong>
-        </label>
-        <label>
-          <input type="checkbox" checked={style.italic} onChange={(event) => onChange('italic', event.target.checked)} />
-          <em>Italic</em>
-        </label>
-      </div>
-      <div className="option-row">
-        {EFFECT_OPTIONS.map((effect) => (
-          <label key={effect}>
-            <input
-              type="radio"
-              name={`${title}-effect`}
-              checked={style.effect === effect}
-              onChange={() => onChange('effect', effect)}
-            />
-            {effect}
-          </label>
-        ))}
-      </div>
-      <label className="inspector-row">
-        <span>Font Size</span>
-        <input type="number" min="12" max="160" value={style.fontSize} onChange={(event) => onChange('fontSize', Number(event.target.value))} />
-      </label>
-      <label className="inspector-row">
-        <span>Outline Width</span>
-        <input type="number" min="0" max="24" value={style.outlineWidth} onChange={(event) => onChange('outlineWidth', Number(event.target.value))} />
-      </label>
-      <label className="inspector-row">
-        <span>Max Font Size (px)</span>
-        <input type="number" min="12" max="180" value={style.maxFontSize} onChange={(event) => onChange('maxFontSize', Number(event.target.value))} />
-      </label>
-      <label className="inspector-row">
-        <span>Text Align</span>
-        <select value={style.textAlign} onChange={(event) => onChange('textAlign', event.target.value as TextAlign)}>
-          {TEXT_ALIGN_OPTIONS.map((align) => (
-            <option key={align} value={align}>
-              {align}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="inspector-row">
-        <span>Vertical Align</span>
-        <select value={style.verticalAlign} onChange={(event) => onChange('verticalAlign', event.target.value as VerticalAlign)}>
-          {VERTICAL_ALIGN_OPTIONS.map((align) => (
-            <option key={align} value={align}>
-              {align}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="inspector-row slider-row">
-        <span>Opacity</span>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={style.opacity}
-          onChange={(event) => onChange('opacity', Number(event.target.value))}
-        />
-        <input
-          type="number"
-          min="0"
-          max="1"
-          step="0.05"
-          value={style.opacity}
-          onChange={(event) => onChange('opacity', Number(event.target.value))}
-        />
-      </label>
-    </div>
-  );
-}
-
-interface SelectedTextInspectorProps {
-  field: EditableTextField;
-  effectiveStyle: TextStyleSettings;
-  onTextChange: (value: string) => void;
-  onStyleChange: <K extends keyof TextStyleSettings>(key: K, value: TextStyleSettings[K]) => void;
-  onRemove: () => void;
-  onBringToTop: () => void;
-  onApplyToAll: () => void;
-}
-
-function SelectedTextInspector({
-  field,
-  effectiveStyle,
-  onTextChange,
-  onStyleChange,
-  onRemove,
-  onBringToTop,
-  onApplyToAll,
-}: SelectedTextInspectorProps) {
-  return (
-    <div className="inspector-card selected-inspector">
-      <div className="inspector-title-row">
-        <h3>Selected Text Inspector</h3>
-        <button className="remove-button" type="button" onClick={onRemove}>
-          remove
-        </button>
-      </div>
-      <label className="field-control inspector-textarea">
-        <span>Content</span>
-        <textarea value={field.text} onChange={(event) => onTextChange(event.target.value)} rows={3} />
-      </label>
-      <StyleInspector title="Text Settings" style={effectiveStyle} onChange={onStyleChange} />
-      <button className="inspector-action" type="button" onClick={onBringToTop}>
-        Bring to top layer
-      </button>
-      <button className="inspector-action full-width" type="button" onClick={onApplyToAll}>
-        Apply these settings to ALL text boxes
-      </button>
-    </div>
   );
 }
