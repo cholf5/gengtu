@@ -83,10 +83,29 @@ export interface DerivedTemplateDraft {
 }
 
 /**
+ * Derive Template ID / Name / Image URL from a free-form `Name` plus an optional
+ * file extension (no leading dot needed).
+ *
+ * - id: whitespace and underscores collapse into a single `-`, case preserved
+ * - url: `/memes/<lowercased-id>.<ext>`; the ext is omitted when empty
+ */
+export function deriveTemplateDraftFromName(name: string, ext = ''): DerivedTemplateDraft {
+  const trimmedName = name.trim();
+  const id = trimmedName
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  const cleanExt = ext.trim().toLowerCase().replace(/^\./, '');
+  const url = id ? `/memes/${id.toLowerCase()}${cleanExt ? `.${cleanExt}` : ''}` : '';
+
+  return { id, name: trimmedName, url };
+}
+
+/**
  * Derive Template ID / Name / Image URL from an uploaded file's name.
  *
  * - `Distracted-Boyfriend.jpg` → id `Distracted-Boyfriend`, name `Distracted Boyfriend`, url `/memes/distracted-boyfriend.jpg`
- * - Whitespace and underscores collapse into a single `-` separator (preserving case).
+ * - Whitespace / `_` / `-` in the filename are folded back to spaces for the human-facing Name.
  * - The image URL is fully lowercased so it matches conventional filesystem paths.
  */
 export function deriveTemplateDraftFromFilename(filename: string): DerivedTemplateDraft {
@@ -94,14 +113,20 @@ export function deriveTemplateDraftFromFilename(filename: string): DerivedTempla
   const lastDot = trimmed.lastIndexOf('.');
   const hasExt = lastDot > 0 && lastDot < trimmed.length - 1;
   const rawBase = hasExt ? trimmed.slice(0, lastDot) : trimmed;
-  const ext = hasExt ? trimmed.slice(lastDot + 1).toLowerCase() : '';
+  const ext = hasExt ? trimmed.slice(lastDot + 1) : '';
 
-  const id = rawBase
-    .replace(/[\s_]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  const name = id.replace(/-/g, ' ');
-  const url = id ? `/memes/${id.toLowerCase()}${ext ? `.${ext}` : ''}` : '';
+  const name = rawBase.replace(/[\s_-]+/g, ' ').trim();
+  return deriveTemplateDraftFromName(name, ext);
+}
 
-  return { id, name, url };
+/**
+ * Extract the (lowercased, no-dot) extension from a filename, or `''` if there isn't one.
+ */
+export function extractFileExtension(filename: string): string {
+  const trimmed = filename.trim();
+  const lastDot = trimmed.lastIndexOf('.');
+  if (lastDot <= 0 || lastDot >= trimmed.length - 1) {
+    return '';
+  }
+  return trimmed.slice(lastDot + 1).toLowerCase();
 }

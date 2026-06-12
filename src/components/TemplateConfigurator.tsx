@@ -9,6 +9,8 @@ import {
   buildTemplateJson,
   createConfiguratorTextField,
   deriveTemplateDraftFromFilename,
+  deriveTemplateDraftFromName,
+  extractFileExtension,
   getNextTextFieldIndex,
   stringifyTemplateJson,
 } from '../utils/templateConfigurator';
@@ -20,17 +22,16 @@ interface TemplateConfiguratorProps {
 }
 
 interface DraftState {
-  id: string;
   name: string;
-  url: string;
   tagsInput: string;
+  /** Extension carried over from the uploaded file so url stays in sync when name changes. */
+  imageExt: string;
 }
 
 const initialDraft: DraftState = {
-  id: '',
   name: '',
-  url: '',
   tagsInput: '',
+  imageExt: '',
 };
 
 export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
@@ -42,12 +43,14 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
   const [api, contextHolder] = message.useMessage();
 
   const selectedField = fields.find((field) => field.id === selectedFieldId) ?? null;
-  const templateJson = useMemo(() => buildTemplateJson(draft, fields), [draft, fields]);
+  const derived = useMemo(() => deriveTemplateDraftFromName(draft.name, draft.imageExt), [draft.name, draft.imageExt]);
+  const templateJson = useMemo(
+    () => buildTemplateJson({ id: derived.id, name: derived.name, url: derived.url, tagsInput: draft.tagsInput }, fields),
+    [derived, draft.tagsInput, fields],
+  );
   const jsonText = useMemo(() => stringifyTemplateJson(templateJson), [templateJson]);
   const warnings = [
-    !draft.id.trim() ? 'Template ID is missing.' : '',
     !draft.name.trim() ? 'Name is missing.' : '',
-    !draft.url.trim() ? 'Image URL is missing.' : '',
     !imageUrl ? 'Upload an image to place text boxes.' : '',
     fields.length === 0 ? 'Add at least one text box.' : '',
   ].filter(Boolean);
@@ -79,15 +82,13 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
       setFields([]);
       setSelectedFieldId('');
 
-      const derived = deriveTemplateDraftFromFilename(file.name);
-      if (derived.id) {
-        setDraft((current) => ({
-          ...current,
-          id: derived.id,
-          name: derived.name,
-          url: derived.url,
-        }));
-      }
+      const fromFile = deriveTemplateDraftFromFilename(file.name);
+      const ext = extractFileExtension(file.name);
+      setDraft((current) => ({
+        ...current,
+        name: fromFile.name || current.name,
+        imageExt: ext,
+      }));
 
       api.info('Image changed, text boxes reset.');
       return false;
@@ -215,18 +216,18 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
         <aside className="control-panel inspector-panel">
           <Card size="small" title="Template Info">
             <Form layout="vertical">
-              <Form.Item label="Template ID">
-                <Input value={draft.id} onChange={(event) => setDraft({ ...draft, id: event.target.value })} />
-              </Form.Item>
               <Form.Item label="Name">
-                <Input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
-              </Form.Item>
-              <Form.Item label="Image URL">
                 <Input
-                  value={draft.url}
-                  onChange={(event) => setDraft({ ...draft, url: event.target.value })}
-                  placeholder="/memes/my-template.jpg"
+                  value={draft.name}
+                  onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+                  placeholder="Distracted Boyfriend"
                 />
+              </Form.Item>
+              <Form.Item label="Template ID" tooltip="Auto-generated from Name">
+                <Input value={derived.id} disabled placeholder="Distracted-Boyfriend" />
+              </Form.Item>
+              <Form.Item label="Image URL" tooltip="Auto-generated from Name and uploaded image">
+                <Input value={derived.url} disabled placeholder="/memes/distracted-boyfriend.jpg" />
               </Form.Item>
               <Form.Item label="Tags">
                 <Input

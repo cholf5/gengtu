@@ -4,6 +4,8 @@ import {
   buildTemplateJson,
   createConfiguratorTextField,
   deriveTemplateDraftFromFilename,
+  deriveTemplateDraftFromName,
+  extractFileExtension,
   getNextTextFieldIndex,
   parseTags,
 } from './templateConfigurator';
@@ -85,5 +87,26 @@ describe('template configurator helpers', () => {
       name: 'choice road',
       url: '/memes/choice-road',
     });
+  });
+
+  it('derives id and url from a free-form name plus extension', () => {
+    expect(deriveTemplateDraftFromName('Distracted Boyfriend', 'jpg')).toEqual({
+      id: 'Distracted-Boyfriend',
+      name: 'Distracted Boyfriend',
+      url: '/memes/distracted-boyfriend.jpg',
+    });
+    expect(deriveTemplateDraftFromName('  Two   Buttons  ', '.PNG')).toEqual({
+      id: 'Two-Buttons',
+      name: 'Two   Buttons',
+      url: '/memes/two-buttons.png',
+    });
+    expect(deriveTemplateDraftFromName('  ', 'jpg')).toEqual({ id: '', name: '', url: '' });
+  });
+
+  it('extracts a lowercased extension or empty when missing', () => {
+    expect(extractFileExtension('Foo.PNG')).toBe('png');
+    expect(extractFileExtension('foo.tar.gz')).toBe('gz');
+    expect(extractFileExtension('foo')).toBe('');
+    expect(extractFileExtension('.hidden')).toBe('');
   });
 });
