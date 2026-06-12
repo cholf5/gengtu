@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ConfigProvider } from 'antd';
+import { Button, ConfigProvider, Layout, Typography } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { Gallery } from './components/Gallery';
 import { MemeEditor } from './components/MemeEditor';
 import { TemplateConfigurator } from './components/TemplateConfigurator';
@@ -60,31 +61,33 @@ function App() {
         },
       }}
     >
-      <main className="app-shell">
-        <header className="hero">
-          <p className="eyebrow">Open Meme</p>
-          <h1>开源、纯前端的 Meme 生成器</h1>
-          <p className="hero-copy">选择一个模板，输入文字，然后下载或复制你的梗图。</p>
-          <div className="hero-actions">
-            <button className="secondary-button" type="button" onClick={openCreate}>
-              Create template
-            </button>
-          </div>
-        </header>
-
-        {view === 'create' ? (
-          <TemplateConfigurator onBack={goHome} />
-        ) : selectedTemplate ? (
-          <MemeEditor template={selectedTemplate} onBack={() => setSelectedTemplate(null)} />
-        ) : (
-          <Gallery
-            templates={filteredTemplates}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onSelectTemplate={setSelectedTemplate}
-          />
-        )}
-      </main>
+      <Layout className="app-layout">
+        <Layout.Header className="app-header">
+          <button className="app-brand" type="button" onClick={goHome}>
+            <Typography.Text className="app-brand-eyebrow">OPEN MEME</Typography.Text>
+            <Typography.Title level={4} className="app-brand-title">
+              开源 · 纯前端的 Meme 生成器
+            </Typography.Title>
+          </button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            Create template
+          </Button>
+        </Layout.Header>
+        <Layout.Content className="app-content">
+          {view === 'create' ? (
+            <TemplateConfigurator onBack={goHome} />
+          ) : selectedTemplate ? (
+            <MemeEditor template={selectedTemplate} onBack={() => setSelectedTemplate(null)} />
+          ) : (
+            <Gallery
+              templates={filteredTemplates}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSelectTemplate={setSelectedTemplate}
+            />
+          )}
+        </Layout.Content>
+      </Layout>
     </ConfigProvider>
   );
 }

@@ -1,4 +1,5 @@
 import { Button, Card, Form, Input, InputNumber, Space, Typography } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 import type { EditableTextField } from '../types';
 import type { Size } from '../utils/geometry';
 
@@ -15,14 +16,15 @@ export function TemplateFieldInspector({ field, imageSize, onChange, onRemove }:
   }
 
   return (
-    <Card size="small" className="selected-inspector">
-      <div className="inspector-title-row">
-        <Typography.Title level={3}>Field Layout</Typography.Title>
-        <Button danger type="text" onClick={onRemove}>
+    <Card
+      size="small"
+      title={<Typography.Text strong>Field Layout</Typography.Text>}
+      extra={
+        <Button danger type="text" size="small" icon={<DeleteOutlined />} onClick={onRemove}>
           remove
         </Button>
-      </div>
-
+      }
+    >
       <Form layout="vertical" size="middle">
         <Form.Item label="Field ID">
           <Input value={field.id} onChange={(event) => onChange(field.id, { id: event.target.value })} />

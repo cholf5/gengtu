@@ -1,4 +1,4 @@
 - [x] `/create` 实现
-- [ ] 全站迁移 Antd
+- [x] 全站迁移 Antd
 - [ ] 列表页里的元素显示小一点
 - [ ] 优化首屏体积， /create 和 AntD 的 lazy loading/code splitting

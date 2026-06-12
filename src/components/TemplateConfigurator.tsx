@@ -1,4 +1,4 @@
-import { InboxOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CopyOutlined, InboxOutlined, PlusOutlined } from '@ant-design/icons';
 import { Alert, Button, Card, Form, Input, Space, Typography, Upload, message } from 'antd';
 import type { UploadProps } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
@@ -148,10 +148,16 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     <section className="editor-layout" aria-label="Create template">
       {contextHolder}
       <div className="editor-toolbar">
-        <Button onClick={onBack}>← 返回模板</Button>
+        <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
+          返回模板
+        </Button>
         <div>
-          <Typography.Title level={2}>Create template</Typography.Title>
-          <Typography.Paragraph>上传本地图片预览，标注文本区域，并复制生成的 JSON。</Typography.Paragraph>
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            Create template
+          </Typography.Title>
+          <Typography.Paragraph type="secondary" style={{ margin: '4px 0 0' }}>
+            上传本地图片预览，标注文本区域，并复制生成的 JSON。
+          </Typography.Paragraph>
         </div>
       </div>
 
@@ -171,8 +177,8 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
                 <Upload {...uploadProps}>
                   <Button>Replace image</Button>
                 </Upload>
-                <Button type="primary" onClick={addTextField} disabled={!imageUrl}>
-                  + Add text box
+                <Button type="primary" icon={<PlusOutlined />} onClick={addTextField} disabled={!imageUrl}>
+                  Add text box
                 </Button>
               </div>
 
@@ -194,7 +200,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
           )}
         </Card>
 
-        <aside className="control-panel inspector-panel panel">
+        <aside className="control-panel inspector-panel">
           <Card size="small" title="Template Info">
             <Form layout="vertical">
               <Form.Item label="Template ID">
@@ -226,7 +232,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
 
           {warnings.length > 0 && <Alert type="warning" showIcon message="Template is incomplete" description={warnings.join(' ')} />}
 
-          <Card size="small" title="Generated JSON" extra={<Button onClick={copyJson}>Copy JSON</Button>}>
+          <Card size="small" title="Generated JSON" extra={<Button icon={<CopyOutlined />} onClick={copyJson}>Copy JSON</Button>}>
             <pre className="json-preview">{jsonText}</pre>
           </Card>
         </aside>

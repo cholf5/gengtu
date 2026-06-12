@@ -1,4 +1,5 @@
-import { Button, Card, Input, Space, Typography } from 'antd';
+import { Button, Card, Form, Input, Space, Typography } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 import type { EditableTextField, TextStyleSettings } from '../types';
 import { TextStyleInspector } from './TextStyleInspector';
 
@@ -22,19 +23,21 @@ export function SelectedTextInspector({
   onApplyToAll,
 }: SelectedTextInspectorProps) {
   return (
-    <Card className="selected-inspector" size="small">
-      <div className="inspector-title-row">
-        <Typography.Title level={3}>Selected Text Inspector</Typography.Title>
-        <Button danger type="text" onClick={onRemove}>
+    <Card
+      size="small"
+      title={<Typography.Text strong>Selected Text Inspector</Typography.Text>}
+      extra={
+        <Button danger type="text" size="small" icon={<DeleteOutlined />} onClick={onRemove}>
           remove
         </Button>
-      </div>
-
+      }
+    >
       <Space direction="vertical" size="middle" className="full-width-stack">
-        <label className="field-control inspector-textarea">
-          <span>Content</span>
-          <Input.TextArea value={field.text} onChange={(event) => onTextChange(event.target.value)} rows={3} />
-        </label>
+        <Form layout="vertical" size="middle">
+          <Form.Item label="Content">
+            <Input.TextArea value={field.text} onChange={(event) => onTextChange(event.target.value)} rows={3} />
+          </Form.Item>
+        </Form>
 
         <TextStyleInspector title="Text Settings" style={effectiveStyle} onChange={onStyleChange} />
 

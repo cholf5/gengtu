@@ -1,4 +1,4 @@
-import { Checkbox, ColorPicker, Form, InputNumber, Radio, Select, Slider, Space, Typography } from 'antd';
+import { Card, Checkbox, ColorPicker, Form, InputNumber, Radio, Select, Slider, Space } from 'antd';
 import type { TextAlign, TextEffect, TextStyleSettings, VerticalAlign } from '../types';
 
 const FONT_OPTIONS = ['Impact', 'Arial Black', 'Arial', 'Verdana', 'Comic Sans MS', 'system-ui'];
@@ -18,8 +18,7 @@ function toHex(value: string | { toHexString: () => string }) {
 
 export function TextStyleInspector({ title, style, onChange }: TextStyleInspectorProps) {
   return (
-    <div className="inspector-card">
-      <Typography.Title level={4}>{title}</Typography.Title>
+    <Card size="small" type="inner" title={title}>
       <Form layout="vertical" size="middle">
         <Form.Item label="Font">
           <Select
@@ -94,6 +93,6 @@ export function TextStyleInspector({ title, style, onChange }: TextStyleInspecto
           <Slider min={0} max={1} step={0.05} value={style.opacity} onChange={(value) => onChange('opacity', value)} />
         </Form.Item>
       </Form>
-    </div>
+    </Card>
   );
 }

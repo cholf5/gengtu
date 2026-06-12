@@ -1,3 +1,4 @@
+import { Card, Empty, Input, Space, Tag, Typography } from 'antd';
 import type { MemeTemplate } from '../types';
 
 interface GalleryProps {
@@ -9,46 +10,52 @@ interface GalleryProps {
 
 export function Gallery({ templates, searchQuery, onSearchChange, onSelectTemplate }: GalleryProps) {
   return (
-    <section className="gallery panel" aria-labelledby="gallery-heading">
+    <section aria-labelledby="gallery-heading">
       <div className="gallery-header">
         <div>
-          <h2 id="gallery-heading">选择模板</h2>
-          <p>所有模板都来自本地 JSON 配置和静态图片资源。</p>
+          <Typography.Title level={3} id="gallery-heading" style={{ margin: 0 }}>
+            选择模板
+          </Typography.Title>
+          <Typography.Paragraph type="secondary" style={{ margin: '8px 0 0' }}>
+            所有模板都来自本地 JSON 配置和静态图片资源。
+          </Typography.Paragraph>
         </div>
-        <label className="search-box">
-          <span>搜索</span>
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="按名称或标签搜索"
-          />
-        </label>
+        <Input.Search
+          allowClear
+          value={searchQuery}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder="按名称或标签搜索"
+          className="gallery-search"
+        />
       </div>
 
       {templates.length > 0 ? (
         <div className="template-grid">
           {templates.map((template) => (
-            <button
-              className="template-card"
+            <Card
               key={template.id}
-              type="button"
+              hoverable
               onClick={() => onSelectTemplate(template)}
+              cover={<img src={template.url} alt="" loading="lazy" className="template-cover" />}
+              styles={{ body: { padding: 14 } }}
             >
-              <img src={template.url} alt="" loading="lazy" />
-              <span className="template-card-title">{template.name}</span>
-              <span className="tag-list">
-                {template.tags.map((tag) => (
-                  <span className="tag" key={tag}>
-                    {tag}
-                  </span>
-                ))}
-              </span>
-            </button>
+              <Card.Meta
+                title={template.name}
+                description={
+                  <Space size={[4, 4]} wrap>
+                    {template.tags.map((tag) => (
+                      <Tag key={tag} color="blue">
+                        {tag}
+                      </Tag>
+                    ))}
+                  </Space>
+                }
+              />
+            </Card>
           ))}
         </div>
       ) : (
-        <p className="empty-state">没有找到匹配的模板。换个关键词试试。</p>
+        <Empty description="没有找到匹配的模板。换个关键词试试。" />
       )}
     </section>
   );

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Alert, Button, Card, Empty, Space, Typography } from 'antd';
+import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, PlusOutlined } from '@ant-design/icons';
 import type { EditableTextField, MemeTemplate, TextStyleSettings, VerticalAlign } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
 import { copyEditableMemeToClipboard, downloadEditableMemeImage } from '../utils/canvas';
@@ -175,48 +177,54 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
   return (
     <section className="editor-layout" aria-label={`${template.name} 编辑器`}>
       <div className="editor-toolbar">
-        <button className="secondary-button" type="button" onClick={onBack}>
-          ← 返回模板
-        </button>
+        <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
+          返回模板
+        </Button>
         <div>
-          <h2>{template.name}</h2>
-          <p>{template.tags.join(' · ')}</p>
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            {template.name}
+          </Typography.Title>
+          <Typography.Paragraph type="secondary" style={{ margin: '4px 0 0' }}>
+            {template.tags.join(' · ')}
+          </Typography.Paragraph>
         </div>
       </div>
 
       <div className="editor-grid inspector-mode">
-        <div className="preview-panel panel">
-          <div className="preview-actions">
-            <button className="secondary-button" type="button" onClick={addTextField}>
-              + Add text box
-            </button>
-          </div>
-          <TextFieldsPreview
-            imageRef={imageRef}
-            imageUrl={template.url}
-            imageAlt={template.name}
-            fields={fields}
-            selectedFieldId={selectedFieldId}
-            imageSize={imageSize}
-            previewScale={previewScale}
-            onImageLoad={updatePreviewScale}
-            onSelectField={setSelectedFieldId}
-            onFieldRectChange={(fieldId, rect) => {
-              setFields((current) => updateField(current, fieldId, (field) => ({ ...field, ...rect })));
-              markEdited();
-            }}
-            renderField={(field) => {
-              const style = resolveTextStyle(field);
-              return (
-                <div className={`preview-text ${getVerticalClass(style.verticalAlign)}`} style={getPreviewTextStyle(style, previewScale)}>
-                  {getPreviewText(field, style)}
-                </div>
-              );
-            }}
-          />
-        </div>
+        <Card className="preview-panel">
+          <Space direction="vertical" size="middle" className="full-width-stack">
+            <div className="preview-actions">
+              <Button icon={<PlusOutlined />} onClick={addTextField}>
+                Add text box
+              </Button>
+            </div>
+            <TextFieldsPreview
+              imageRef={imageRef}
+              imageUrl={template.url}
+              imageAlt={template.name}
+              fields={fields}
+              selectedFieldId={selectedFieldId}
+              imageSize={imageSize}
+              previewScale={previewScale}
+              onImageLoad={updatePreviewScale}
+              onSelectField={setSelectedFieldId}
+              onFieldRectChange={(fieldId, rect) => {
+                setFields((current) => updateField(current, fieldId, (field) => ({ ...field, ...rect })));
+                markEdited();
+              }}
+              renderField={(field) => {
+                const style = resolveTextStyle(field);
+                return (
+                  <div className={`preview-text ${getVerticalClass(style.verticalAlign)}`} style={getPreviewTextStyle(style, previewScale)}>
+                    {getPreviewText(field, style)}
+                  </div>
+                );
+              }}
+            />
+          </Space>
+        </Card>
 
-        <aside className="control-panel inspector-panel panel">
+        <aside className="control-panel inspector-panel">
           {selectedField ? (
             <SelectedTextInspector
               field={selectedField}
@@ -228,19 +236,32 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               onApplyToAll={applySelectedStyleToAll}
             />
           ) : (
-            <div className="inspector-card empty-inspector">选择或新增一个文本框来编辑属性。</div>
+            <Card size="small">
+              <Empty description="选择或新增一个文本框来编辑属性。" />
+            </Card>
           )}
 
-          <div className="action-row">
-            <button className="primary-button" type="button" disabled={isBusy} onClick={() => runImageAction('download')}>
+          <Space.Compact block>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              loading={isBusy}
+              onClick={() => runImageAction('download')}
+              style={{ flex: 1 }}
+            >
               下载 PNG
-            </button>
-            <button className="secondary-button" type="button" disabled={isBusy} onClick={() => runImageAction('copy')}>
+            </Button>
+            <Button
+              icon={<CopyOutlined />}
+              loading={isBusy}
+              onClick={() => runImageAction('copy')}
+              style={{ flex: 1 }}
+            >
               复制图片
-            </button>
-          </div>
+            </Button>
+          </Space.Compact>
 
-          {statusMessage && <p className="status-message" role="status">{statusMessage}</p>}
+          {statusMessage && <Alert type="info" showIcon message={statusMessage} />}
         </aside>
       </div>
     </section>
