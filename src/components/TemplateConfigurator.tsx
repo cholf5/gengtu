@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, CopyOutlined, InboxOutlined, PlusOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, InboxOutlined, PlusOutlined } from '@ant-design/icons';
 import { Alert, Button, Card, Form, Input, Space, Typography, Upload, message } from 'antd';
 import type { UploadProps } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
@@ -157,6 +157,24 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     }
   };
 
+  const downloadJson = () => {
+    const slug = derived.id.toLowerCase();
+    if (!slug) {
+      api.error('Set a Name before downloading.');
+      return;
+    }
+
+    const blob = new Blob([jsonText], { type: 'application/json' });
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = href;
+    link.download = `${slug}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(href);
+  };
+
   return (
     <section className="editor-layout" aria-label="Create template">
       {contextHolder}
@@ -215,21 +233,28 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
 
         <aside className="control-panel inspector-panel">
           <Card size="small" title="Template Info">
-            <Form layout="vertical">
-              <Form.Item label="Name">
+            <Form
+              layout="horizontal"
+              size="small"
+              colon={false}
+              labelCol={{ flex: '92px' }}
+              wrapperCol={{ flex: 1 }}
+              labelAlign="left"
+            >
+              <Form.Item label="Name" style={{ marginBottom: 8 }}>
                 <Input
                   value={draft.name}
                   onChange={(event) => setDraft({ ...draft, name: event.target.value })}
                   placeholder="Distracted Boyfriend"
                 />
               </Form.Item>
-              <Form.Item label="Template ID" tooltip="Auto-generated from Name">
+              <Form.Item label="Template ID" tooltip="Auto-generated from Name" style={{ marginBottom: 8 }}>
                 <Input value={derived.id} disabled placeholder="Distracted-Boyfriend" />
               </Form.Item>
-              <Form.Item label="Image URL" tooltip="Auto-generated from Name and uploaded image">
+              <Form.Item label="Image URL" tooltip="Auto-generated from Name and uploaded image" style={{ marginBottom: 8 }}>
                 <Input value={derived.url} disabled placeholder="/memes/distracted-boyfriend.jpg" />
               </Form.Item>
-              <Form.Item label="Tags">
+              <Form.Item label="Tags" style={{ marginBottom: 0 }}>
                 <Input
                   value={draft.tagsInput}
                   onChange={(event) => setDraft({ ...draft, tagsInput: event.target.value })}
@@ -245,7 +270,20 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
 
           {warnings.length > 0 && <Alert type="warning" showIcon message="Template is incomplete" description={warnings.join(' ')} />}
 
-          <Card size="small" title="Generated JSON" extra={<Button icon={<CopyOutlined />} onClick={copyJson}>Copy JSON</Button>}>
+          <Card
+            size="small"
+            title="Generated JSON"
+            extra={
+              <Space size="small">
+                <Button icon={<CopyOutlined />} onClick={copyJson}>
+                  Copy
+                </Button>
+                <Button icon={<DownloadOutlined />} onClick={downloadJson} disabled={!derived.id}>
+                  Download
+                </Button>
+              </Space>
+            }
+          >
             <pre className="json-preview">{jsonText}</pre>
           </Card>
         </aside>

@@ -25,28 +25,31 @@ export function SelectedTextInspector({
   return (
     <Card
       size="small"
-      title={<Typography.Text strong>Selected Text Inspector</Typography.Text>}
+      title={<Typography.Text strong>Text Inspector</Typography.Text>}
       extra={
         <Button danger type="text" size="small" icon={<DeleteOutlined />} onClick={onRemove}>
           remove
         </Button>
       }
     >
-      <Space direction="vertical" size="middle" className="full-width-stack">
-        <Form layout="vertical" size="middle">
-          <Form.Item label="Content">
-            <Input.TextArea value={field.text} onChange={(event) => onTextChange(event.target.value)} rows={3} />
-          </Form.Item>
-        </Form>
+      <Space direction="vertical" size={10} className="full-width-stack">
+        <Input.TextArea
+          value={field.text}
+          onChange={(event) => onTextChange(event.target.value)}
+          autoSize={{ minRows: 2, maxRows: 5 }}
+          placeholder="Content"
+        />
 
         <TextStyleInspector title="Text Settings" style={effectiveStyle} onChange={onStyleChange} />
 
-        <Button block onClick={onBringToTop}>
-          Bring to top layer
-        </Button>
-        <Button block onClick={onApplyToAll}>
-          Apply these settings to ALL text boxes
-        </Button>
+        <Space.Compact block>
+          <Button size="small" onClick={onBringToTop} style={{ flex: 1 }}>
+            Bring to top
+          </Button>
+          <Button size="small" onClick={onApplyToAll} style={{ flex: 1 }}>
+            Apply to all
+          </Button>
+        </Space.Compact>
       </Space>
     </Card>
   );
