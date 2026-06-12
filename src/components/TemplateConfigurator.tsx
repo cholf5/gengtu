@@ -8,6 +8,7 @@ import { clampBoxToImage } from '../utils/geometry';
 import {
   buildTemplateJson,
   createConfiguratorTextField,
+  deriveTemplateDraftFromFilename,
   getNextTextFieldIndex,
   stringifyTemplateJson,
 } from '../utils/templateConfigurator';
@@ -77,6 +78,17 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
       });
       setFields([]);
       setSelectedFieldId('');
+
+      const derived = deriveTemplateDraftFromFilename(file.name);
+      if (derived.id) {
+        setDraft((current) => ({
+          ...current,
+          id: derived.id,
+          name: derived.name,
+          url: derived.url,
+        }));
+      }
+
       api.info('Image changed, text boxes reset.');
       return false;
     },

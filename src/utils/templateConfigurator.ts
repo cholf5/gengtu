@@ -75,3 +75,33 @@ export function buildTemplateJson(draft: TemplateDraft, fields: EditableTextFiel
 export function stringifyTemplateJson(template: MemeTemplate) {
   return `${JSON.stringify(template, null, 2)}\n`;
 }
+
+export interface DerivedTemplateDraft {
+  id: string;
+  name: string;
+  url: string;
+}
+
+/**
+ * Derive Template ID / Name / Image URL from an uploaded file's name.
+ *
+ * - `Distracted-Boyfriend.jpg` → id `Distracted-Boyfriend`, name `Distracted Boyfriend`, url `/memes/distracted-boyfriend.jpg`
+ * - Whitespace and underscores collapse into a single `-` separator (preserving case).
+ * - The image URL is fully lowercased so it matches conventional filesystem paths.
+ */
+export function deriveTemplateDraftFromFilename(filename: string): DerivedTemplateDraft {
+  const trimmed = filename.trim();
+  const lastDot = trimmed.lastIndexOf('.');
+  const hasExt = lastDot > 0 && lastDot < trimmed.length - 1;
+  const rawBase = hasExt ? trimmed.slice(0, lastDot) : trimmed;
+  const ext = hasExt ? trimmed.slice(lastDot + 1).toLowerCase() : '';
+
+  const id = rawBase
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  const name = id.replace(/-/g, ' ');
+  const url = id ? `/memes/${id.toLowerCase()}${ext ? `.${ext}` : ''}` : '';
+
+  return { id, name, url };
+}

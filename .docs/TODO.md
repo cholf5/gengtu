@@ -2,3 +2,7 @@
 - [x] 全站迁移 Antd
 - [ ] 列表页里的元素显示小一点
 - [ ] 优化首屏体积， /create 和 AntD 的 lazy loading/code splitting
+- [ ] 夜间模式支持
+- [ ] 多语言支持
+- [x] `/create` 上传后根据文件名自动填充表单
+- [ ] 完成该功能: MVP only generates JSON. Put the image file under public/memes separately.

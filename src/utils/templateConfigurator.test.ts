@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { EditableTextField } from '../types';
-import { buildTemplateJson, createConfiguratorTextField, getNextTextFieldIndex, parseTags } from './templateConfigurator';
+import {
+  buildTemplateJson,
+  createConfiguratorTextField,
+  deriveTemplateDraftFromFilename,
+  getNextTextFieldIndex,
+  parseTags,
+} from './templateConfigurator';
 
 const field: EditableTextField = {
   id: 'text_1',
@@ -54,6 +60,30 @@ describe('template configurator helpers', () => {
           align: 'center',
         },
       ],
+    });
+  });
+
+  it('derives template draft fields from an upload filename', () => {
+    expect(deriveTemplateDraftFromFilename('Distracted-Boyfriend.jpg')).toEqual({
+      id: 'Distracted-Boyfriend',
+      name: 'Distracted Boyfriend',
+      url: '/memes/distracted-boyfriend.jpg',
+    });
+  });
+
+  it('normalizes whitespace, underscores and stray dashes when deriving the draft', () => {
+    expect(deriveTemplateDraftFromFilename('  Two_Buttons   meme .PNG ')).toEqual({
+      id: 'Two-Buttons-meme',
+      name: 'Two Buttons meme',
+      url: '/memes/two-buttons-meme.png',
+    });
+  });
+
+  it('handles filenames without extensions', () => {
+    expect(deriveTemplateDraftFromFilename('choice road')).toEqual({
+      id: 'choice-road',
+      name: 'choice road',
+      url: '/memes/choice-road',
     });
   });
 });
