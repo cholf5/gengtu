@@ -44,8 +44,8 @@ Anything that constructs URLs must respect `import.meta.env.BASE_URL` (see `App.
 
 Both the image (PNG/JPG/SVG) and the sibling JSON live side-by-side in `public/memes/`. They're treated as project assets, not code. Because `public/` is outside Vite's module graph, `import.meta.glob` doesn't apply — discovery goes through a manifest:
 
-- `vite-plugin-meme-manifest.ts` scans `public/memes/*.json` at `buildStart` and on dev file add/unlink, writing `public/memes/index.json` (a sorted array of file names). The manifest is gitignored — it's a generated artifact.
-- `src/memes/index.ts` exposes `async loadMemeTemplates()`: fetches the manifest, fetches each JSON in parallel, runs `isMemeTemplate` runtime validation, prefixes `url` with `BASE_URL`, sorts by name. Invalid JSONs are warned to console and skipped, not thrown.
+- `vite-plugin-meme-manifest.ts` scans `public/memes/*.json` at `buildStart` and on dev `add` / `change` / `unlink`, and writes `public/memes/index.json` — **a single bundle that inlines every template's full JSON**. This matters: a per-template fetch model would death-by-RTT once the gallery has 100+ entries (HTTP/1.1 concurrency caps, TTFB stacking). The manifest is gitignored.
+- `src/memes/index.ts` exposes `async loadMemeTemplates()`: one fetch for the bundle, runs `isMemeTemplate` runtime validation per entry, prefixes `url` with `BASE_URL`, sorts by name. Invalid entries are warned to console and skipped, not thrown.
 - `App.tsx` calls it once in an effect and stores the result in state.
 
 **To add a template:** drop both files into `public/memes/` — no registry edit, no manifest edit, the plugin handles it.
