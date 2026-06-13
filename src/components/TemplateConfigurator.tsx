@@ -10,6 +10,7 @@ import {
   createConfiguratorTextField,
   deriveTemplateDraftFromFilename,
   deriveTemplateDraftFromName,
+  duplicateTextField,
   extractFileExtension,
   getNextTextFieldIndex,
   stringifyTemplateJson,
@@ -148,6 +149,16 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     setSelectedFieldId(remaining[0]?.id ?? '');
   };
 
+  const duplicateSelectedField = () => {
+    if (!selectedField) {
+      return;
+    }
+
+    const copy = duplicateTextField(selectedField, fields, imageSize);
+    setFields((current) => [...current, copy]);
+    setSelectedFieldId(copy.id);
+  };
+
   const copyJson = async () => {
     try {
       await navigator.clipboard.writeText(jsonText);
@@ -264,7 +275,13 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
             </Form>
           </Card>
 
-          <TemplateFieldInspector field={selectedField} imageSize={imageSize} onChange={updateField} onRemove={removeSelectedField} />
+          <TemplateFieldInspector
+            field={selectedField}
+            imageSize={imageSize}
+            onChange={updateField}
+            onRemove={removeSelectedField}
+            onDuplicate={duplicateSelectedField}
+          />
 
           <Alert type="info" showIcon message="MVP only generates JSON. Put the image file under public/memes separately." />
 

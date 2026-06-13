@@ -1,5 +1,5 @@
-import { Button, Card, Col, Form, Input, InputNumber, Row, Slider, Typography } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Form, Input, InputNumber, Row, Slider, Space, Typography } from 'antd';
+import { CopyOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { EditableTextField } from '../types';
 import type { Size } from '../utils/geometry';
 
@@ -8,11 +8,12 @@ interface TemplateFieldInspectorProps {
   imageSize: Size;
   onChange: (fieldId: string, patch: Partial<EditableTextField>) => void;
   onRemove: () => void;
+  onDuplicate: () => void;
 }
 
 const COMPACT_ITEM_STYLE = { marginBottom: 8 };
 
-export function TemplateFieldInspector({ field, imageSize, onChange, onRemove }: TemplateFieldInspectorProps) {
+export function TemplateFieldInspector({ field, imageSize, onChange, onRemove, onDuplicate }: TemplateFieldInspectorProps) {
   if (!field) {
     return <Card size="small">选择或新增一个文本框来编辑布局。</Card>;
   }
@@ -22,9 +23,14 @@ export function TemplateFieldInspector({ field, imageSize, onChange, onRemove }:
       size="small"
       title={<Typography.Text strong>Field Layout</Typography.Text>}
       extra={
-        <Button danger type="text" size="small" icon={<DeleteOutlined />} onClick={onRemove}>
-          remove
-        </Button>
+        <Space size={4}>
+          <Button type="text" size="small" icon={<CopyOutlined />} onClick={onDuplicate}>
+            duplicate
+          </Button>
+          <Button danger type="text" size="small" icon={<DeleteOutlined />} onClick={onRemove}>
+            remove
+          </Button>
+        </Space>
       }
     >
       <Form

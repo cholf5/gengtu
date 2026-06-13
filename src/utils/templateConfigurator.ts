@@ -1,5 +1,5 @@
 import type { EditableTextField, MemeTemplate } from '../types';
-import { roundRect } from './geometry';
+import { clampBoxToImage, roundRect, type Size } from './geometry';
 
 export interface TemplateDraft {
   id: string;
@@ -46,6 +46,49 @@ export function createConfiguratorTextField(index: number, imageWidth: number, i
     rotation: 0,
     zIndex: index,
     styleOverrides: {},
+  };
+}
+
+const DUPLICATE_OFFSET = 16;
+
+/**
+ * Duplicate a text box: same geometry / style / rotation as the source, offset by a few
+ * natural-image pixels so the copy is visibly distinct, clamped inside the image, and
+ * stacked above every existing field. The new id / placeholder follow the same
+ * `text_N` / `Text N` convention as freshly added fields — N is the next unused index
+ * across `allFields`, so duplicating is indistinguishable from "Add text box" id-wise.
+ */
+export function duplicateTextField(
+  source: EditableTextField,
+  allFields: EditableTextField[],
+  imageSize: Size,
+): EditableTextField {
+  const nextIndex = getNextTextFieldIndex(allFields);
+  const id = `text_${nextIndex}`;
+  const placeholder = `Text ${nextIndex}`;
+  const maxZ = allFields.reduce((max, field) => Math.max(max, field.zIndex), 0);
+  const offset = clampBoxToImage(
+    {
+      x: source.x + DUPLICATE_OFFSET,
+      y: source.y + DUPLICATE_OFFSET,
+      width: source.width,
+      height: source.height,
+    },
+    imageSize,
+    { minWidth: 1, minHeight: 1 },
+  );
+
+  return {
+    ...source,
+    id,
+    placeholder,
+    text: placeholder,
+    x: offset.x,
+    y: offset.y,
+    width: offset.width,
+    height: offset.height,
+    zIndex: maxZ + 1,
+    styleOverrides: { ...source.styleOverrides },
   };
 }
 
