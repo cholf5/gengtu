@@ -60,12 +60,47 @@ describe('template configurator helpers', () => {
           y: 21,
           width: 100,
           height: 51,
-          fontSize: 36,
+          // No styleOverrides → effective style = DEFAULT_TEXT_STYLE,
+          // so fontSize / color / align fall through from defaults.
+          fontSize: 48,
           color: '#ffffff',
           align: 'center',
         },
       ],
     });
+  });
+
+  it('emits optional style fields only when they deviate from the default', () => {
+    const styled: EditableTextField = {
+      ...field,
+      styleOverrides: { bold: false, outlineColor: '#ff00ff', fontSize: 60 },
+    };
+    const json = buildTemplateJson({ id: 'demo', name: 'Demo', url: '/memes/demo.jpg', tagsInput: '' }, [styled]);
+    const out = json.textFields[0];
+    expect(out).toMatchObject({
+      fontSize: 60,
+      color: '#ffffff',
+      align: 'center',
+      bold: false,
+      outlineColor: '#ff00ff',
+    });
+    // Optional keys that match DEFAULT_TEXT_STYLE must stay out of the JSON.
+    expect(out).not.toHaveProperty('italic');
+    expect(out).not.toHaveProperty('fontFamily');
+    expect(out).not.toHaveProperty('uppercase');
+    expect(out).not.toHaveProperty('effect');
+    expect(out).not.toHaveProperty('verticalAlign');
+    expect(out).not.toHaveProperty('opacity');
+    expect(out).not.toHaveProperty('outlineWidth');
+    expect(out).not.toHaveProperty('maxFontSize');
+  });
+
+  it('always emits fontSize/color/align — even when they match the default — for back-compat', () => {
+    const json = buildTemplateJson({ id: 'demo', name: 'Demo', url: '/memes/demo.jpg', tagsInput: '' }, [field]);
+    const out = json.textFields[0];
+    expect(out.fontSize).toBe(48);
+    expect(out.color).toBe('#ffffff');
+    expect(out.align).toBe('center');
   });
 
   it('only writes rotation into JSON when it is non-zero', () => {

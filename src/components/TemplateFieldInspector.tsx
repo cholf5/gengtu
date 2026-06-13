@@ -1,19 +1,32 @@
 import { Button, Card, Col, Form, Input, InputNumber, Row, Slider, Space, Typography } from 'antd';
 import { CopyOutlined, DeleteOutlined } from '@ant-design/icons';
-import type { EditableTextField } from '../types';
+import type { EditableTextField, TextStyleSettings } from '../types';
 import type { Size } from '../utils/geometry';
+import { TextStyleInspector } from './TextStyleInspector';
 
 interface TemplateFieldInspectorProps {
   field: EditableTextField | null;
   imageSize: Size;
+  effectiveStyle: TextStyleSettings;
   onChange: (fieldId: string, patch: Partial<EditableTextField>) => void;
+  onStyleChange: <K extends keyof TextStyleSettings>(fieldId: string, key: K, value: TextStyleSettings[K]) => void;
+  onApplyStyleToAll: () => void;
   onRemove: () => void;
   onDuplicate: () => void;
 }
 
 const COMPACT_ITEM_STYLE = { marginBottom: 8 };
 
-export function TemplateFieldInspector({ field, imageSize, onChange, onRemove, onDuplicate }: TemplateFieldInspectorProps) {
+export function TemplateFieldInspector({
+  field,
+  imageSize,
+  effectiveStyle,
+  onChange,
+  onStyleChange,
+  onApplyStyleToAll,
+  onRemove,
+  onDuplicate,
+}: TemplateFieldInspectorProps) {
   if (!field) {
     return <Card size="small">选择或新增一个文本框来编辑布局。</Card>;
   }
@@ -33,100 +46,112 @@ export function TemplateFieldInspector({ field, imageSize, onChange, onRemove, o
         </Space>
       }
     >
-      <Form
-        layout="horizontal"
-        size="small"
-        colon={false}
-        labelCol={{ flex: '92px' }}
-        wrapperCol={{ flex: 1 }}
-        labelAlign="left"
-      >
-        <Form.Item label="Field ID" style={COMPACT_ITEM_STYLE}>
-          <Input value={field.id} onChange={(event) => onChange(field.id, { id: event.target.value })} />
-        </Form.Item>
-        <Form.Item label="Placeholder" style={COMPACT_ITEM_STYLE}>
-          <Input
-            value={field.placeholder}
-            onChange={(event) => onChange(field.id, { placeholder: event.target.value, text: event.target.value })}
-          />
-        </Form.Item>
+      <Space direction="vertical" size={10} className="full-width-stack">
+        <Form
+          layout="horizontal"
+          size="small"
+          colon={false}
+          labelCol={{ flex: '92px' }}
+          wrapperCol={{ flex: 1 }}
+          labelAlign="left"
+        >
+          <Form.Item label="Field ID" style={COMPACT_ITEM_STYLE}>
+            <Input value={field.id} onChange={(event) => onChange(field.id, { id: event.target.value })} />
+          </Form.Item>
+          <Form.Item label="Placeholder" style={COMPACT_ITEM_STYLE}>
+            <Input
+              value={field.placeholder}
+              onChange={(event) => onChange(field.id, { placeholder: event.target.value, text: event.target.value })}
+            />
+          </Form.Item>
 
-        <Row gutter={8}>
-          <Col span={12}>
-            <Form.Item label="X" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
-              <InputNumber
-                min={0}
-                max={imageSize.width}
-                value={Math.round(field.x)}
-                onChange={(value) => onChange(field.id, { x: value ?? 0 })}
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item label="Y" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
-              <InputNumber
-                min={0}
-                max={imageSize.height}
-                value={Math.round(field.y)}
-                onChange={(value) => onChange(field.id, { y: value ?? 0 })}
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item label="W" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
-              <InputNumber
-                min={1}
-                max={imageSize.width}
-                value={Math.round(field.width)}
-                onChange={(value) => onChange(field.id, { width: value ?? 1 })}
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item label="H" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
-              <InputNumber
-                min={1}
-                max={imageSize.height}
-                value={Math.round(field.height)}
-                onChange={(value) => onChange(field.id, { height: value ?? 1 })}
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Form.Item label="Rotation" style={{ ...COMPACT_ITEM_STYLE, marginBottom: 0 }}>
-          <Row gutter={8} align="middle" wrap={false}>
-            <Col flex="auto">
-              <Slider
-                min={-180}
-                max={180}
-                step={1}
-                value={field.rotation}
-                onChange={(value) =>
-                  onChange(field.id, { rotation: typeof value === 'number' ? value : field.rotation })
-                }
-                tooltip={{ formatter: (value) => `${value}°` }}
-              />
+          <Row gutter={8}>
+            <Col span={12}>
+              <Form.Item label="X" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
+                <InputNumber
+                  min={0}
+                  max={imageSize.width}
+                  value={Math.round(field.x)}
+                  onChange={(value) => onChange(field.id, { x: value ?? 0 })}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
             </Col>
-            <Col flex="84px">
-              <InputNumber
-                min={-360}
-                max={360}
-                step={1}
-                value={Math.round(field.rotation)}
-                onChange={(value) => onChange(field.id, { rotation: typeof value === 'number' ? value : 0 })}
-                formatter={(value) => `${value}°`}
-                parser={(value) => Number((value ?? '').toString().replace(/[^\d-]/g, '')) || 0}
-                style={{ width: '100%' }}
-              />
+            <Col span={12}>
+              <Form.Item label="Y" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
+                <InputNumber
+                  min={0}
+                  max={imageSize.height}
+                  value={Math.round(field.y)}
+                  onChange={(value) => onChange(field.id, { y: value ?? 0 })}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="W" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
+                <InputNumber
+                  min={1}
+                  max={imageSize.width}
+                  value={Math.round(field.width)}
+                  onChange={(value) => onChange(field.id, { width: value ?? 1 })}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="H" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
+                <InputNumber
+                  min={1}
+                  max={imageSize.height}
+                  value={Math.round(field.height)}
+                  onChange={(value) => onChange(field.id, { height: value ?? 1 })}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
             </Col>
           </Row>
-        </Form.Item>
-      </Form>
+
+          <Form.Item label="Rotation" style={{ ...COMPACT_ITEM_STYLE, marginBottom: 0 }}>
+            <Row gutter={8} align="middle" wrap={false}>
+              <Col flex="auto">
+                <Slider
+                  min={-180}
+                  max={180}
+                  step={1}
+                  value={field.rotation}
+                  onChange={(value) =>
+                    onChange(field.id, { rotation: typeof value === 'number' ? value : field.rotation })
+                  }
+                  tooltip={{ formatter: (value) => `${value}°` }}
+                />
+              </Col>
+              <Col flex="84px">
+                <InputNumber
+                  min={-360}
+                  max={360}
+                  step={1}
+                  value={Math.round(field.rotation)}
+                  onChange={(value) => onChange(field.id, { rotation: typeof value === 'number' ? value : 0 })}
+                  formatter={(value) => `${value}°`}
+                  parser={(value) => Number((value ?? '').toString().replace(/[^\d-]/g, '')) || 0}
+                  style={{ width: '100%' }}
+                />
+              </Col>
+            </Row>
+          </Form.Item>
+        </Form>
+
+        <TextStyleInspector
+          title="Text Style"
+          style={effectiveStyle}
+          onChange={(key, value) => onStyleChange(field.id, key, value)}
+        />
+
+        <Button size="small" block onClick={onApplyStyleToAll}>
+          Apply style to all
+        </Button>
+      </Space>
     </Card>
   );
 }

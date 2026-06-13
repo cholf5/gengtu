@@ -1,5 +1,6 @@
-import type { EditableTextField, MemeTemplate } from '../types';
+import type { EditableTextField, MemeTemplate, MemeTextField, TextStyleSettings } from '../types';
 import { clampBoxToImage, roundRect, type Size } from './geometry';
+import { DEFAULT_TEXT_STYLE, resolveTextStyle } from './textStyles';
 
 export interface TemplateDraft {
   id: string;
@@ -102,6 +103,7 @@ export function buildTemplateJson(draft: TemplateDraft, fields: EditableTextFiel
       const rect = roundRect(field);
       const fieldId = field.id.trim();
       const rotation = Math.round(field.rotation ?? 0);
+      const effective = resolveTextStyle(field);
       return {
         id: fieldId,
         placeholder: field.placeholder.trim() || fieldId,
@@ -109,15 +111,41 @@ export function buildTemplateJson(draft: TemplateDraft, fields: EditableTextFiel
         y: rect.y,
         width: rect.width,
         height: rect.height,
-        fontSize: 36,
-        color: '#ffffff',
-        align: 'center',
+        ...serializeFieldStyle(effective),
         // Only persist rotation when it deviates from the default — keeps existing
         // template JSONs byte-for-byte unchanged when re-exported untouched.
         ...(rotation !== 0 ? { rotation } : {}),
       };
     }),
   };
+}
+
+/**
+ * Serialize a field's effective style for template JSON.
+ *
+ * - `fontSize / color / align` are always emitted (back-compat — every existing
+ *   template JSON carries them; readers/old tools may rely on their presence).
+ * - Every other `TextStyleSettings` key is emitted only when it deviates from
+ *   `DEFAULT_TEXT_STYLE`, so default-only fields stay JSON-clean.
+ */
+function serializeFieldStyle(effective: TextStyleSettings): Pick<MemeTextField, 'fontSize' | 'color' | 'align'> & Partial<MemeTextField> {
+  const persisted: Pick<MemeTextField, 'fontSize' | 'color' | 'align'> = {
+    fontSize: effective.fontSize,
+    color: effective.fontColor,
+    align: effective.textAlign,
+  };
+  const optional: Partial<MemeTextField> = {};
+  if (effective.fontFamily !== DEFAULT_TEXT_STYLE.fontFamily) optional.fontFamily = effective.fontFamily;
+  if (effective.bold !== DEFAULT_TEXT_STYLE.bold) optional.bold = effective.bold;
+  if (effective.italic !== DEFAULT_TEXT_STYLE.italic) optional.italic = effective.italic;
+  if (effective.uppercase !== DEFAULT_TEXT_STYLE.uppercase) optional.uppercase = effective.uppercase;
+  if (effective.verticalAlign !== DEFAULT_TEXT_STYLE.verticalAlign) optional.verticalAlign = effective.verticalAlign;
+  if (effective.effect !== DEFAULT_TEXT_STYLE.effect) optional.effect = effective.effect;
+  if (effective.outlineColor !== DEFAULT_TEXT_STYLE.outlineColor) optional.outlineColor = effective.outlineColor;
+  if (effective.outlineWidth !== DEFAULT_TEXT_STYLE.outlineWidth) optional.outlineWidth = effective.outlineWidth;
+  if (effective.opacity !== DEFAULT_TEXT_STYLE.opacity) optional.opacity = effective.opacity;
+  if (effective.maxFontSize !== DEFAULT_TEXT_STYLE.maxFontSize) optional.maxFontSize = effective.maxFontSize;
+  return { ...persisted, ...optional };
 }
 
 export function stringifyTemplateJson(template: MemeTemplate) {

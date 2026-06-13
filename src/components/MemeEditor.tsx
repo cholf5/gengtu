@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Empty, Space, Typography } from 'antd';
 import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, PlusOutlined } from '@ant-design/icons';
-import type { EditableTextField, MemeTemplate, TextStyleSettings, VerticalAlign } from '../types';
+import type { EditableTextField, MemeTemplate, TextStyleSettings } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
 import { copyEditableMemeToClipboard, downloadEditableMemeImage } from '../utils/canvas';
-import { createEditableFields, createNewEditableField, resolveTextStyle } from '../utils/textStyles';
+import {
+  createEditableFields,
+  createNewEditableField,
+  getPreviewText,
+  getPreviewTextStyle,
+  getVerticalAlignClass,
+  resolveTextStyle,
+} from '../utils/textStyles';
 import { SelectedTextInspector } from './SelectedTextInspector';
 import { TextFieldsPreview } from './TextFieldsPreview';
 
@@ -15,49 +22,6 @@ interface MemeEditorProps {
 
 function updateField(fields: EditableTextField[], fieldId: string, updater: (field: EditableTextField) => EditableTextField) {
   return fields.map((field) => (field.id === fieldId ? updater(field) : field));
-}
-
-function getPreviewText(field: EditableTextField, style: TextStyleSettings) {
-  return style.uppercase ? field.text.toUpperCase() : field.text;
-}
-
-function getPreviewTextStyle(style: TextStyleSettings, scale: number): React.CSSProperties {
-  const strokeWidth = Math.max(0, style.outlineWidth * scale);
-  const previewFontSize = Math.min(style.fontSize, style.maxFontSize);
-  const glowBlur = Math.max(8, style.outlineWidth * 4) * scale;
-  const glowShadow =
-    style.effect === 'glow'
-      ? Array.from({ length: 3 }, () => `0 0 ${glowBlur}px ${style.outlineColor}`).join(', ')
-      : null;
-  const dropShadow =
-    style.effect === 'shadow'
-      ? `${strokeWidth || 3}px ${strokeWidth || 3}px ${Math.max(4, strokeWidth * 2)}px ${style.outlineColor}`
-      : null;
-
-  return {
-    fontSize: `${previewFontSize * scale}px`,
-    color: style.fontColor,
-    fontFamily: style.fontFamily,
-    fontWeight: style.bold ? 900 : 400,
-    fontStyle: style.italic ? 'italic' : 'normal',
-    justifyContent: style.textAlign === 'left' ? 'flex-start' : style.textAlign === 'right' ? 'flex-end' : 'center',
-    opacity: style.opacity,
-    textAlign: style.textAlign,
-    WebkitTextStroke: style.effect === 'outline' ? `${strokeWidth}px ${style.outlineColor}` : undefined,
-    textShadow: glowShadow ?? dropShadow ?? undefined,
-  };
-}
-
-function getVerticalClass(verticalAlign: VerticalAlign) {
-  if (verticalAlign === 'top') {
-    return 'align-top';
-  }
-
-  if (verticalAlign === 'bottom') {
-    return 'align-bottom';
-  }
-
-  return 'align-middle';
 }
 
 export function MemeEditor({ template, onBack }: MemeEditorProps) {
@@ -226,8 +190,8 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               renderField={(field) => {
                 const style = resolveTextStyle(field);
                 return (
-                  <div className={`preview-text ${getVerticalClass(style.verticalAlign)}`} style={getPreviewTextStyle(style, previewScale)}>
-                    {getPreviewText(field, style)}
+                  <div className={`preview-text ${getVerticalAlignClass(style.verticalAlign)}`} style={getPreviewTextStyle(style, previewScale)}>
+                    {getPreviewText(field.text, style)}
                   </div>
                 );
               }}

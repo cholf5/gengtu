@@ -2,7 +2,7 @@ import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, InboxOutlined, PlusO
 import { Alert, Button, Card, Form, Input, Space, Typography, Upload, message } from 'antd';
 import type { UploadProps } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
-import type { EditableTextField } from '../types';
+import type { EditableTextField, TextStyleSettings } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
 import { clampBoxToImage } from '../utils/geometry';
 import {
@@ -15,6 +15,7 @@ import {
   getNextTextFieldIndex,
   stringifyTemplateJson,
 } from '../utils/templateConfigurator';
+import { DEFAULT_TEXT_STYLE, getPreviewText, getPreviewTextStyle, getVerticalAlignClass, resolveTextStyle } from '../utils/textStyles';
 import { TemplateFieldInspector } from './TemplateFieldInspector';
 import { TextFieldsPreview } from './TextFieldsPreview';
 
@@ -44,6 +45,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
   const [api, contextHolder] = message.useMessage();
 
   const selectedField = fields.find((field) => field.id === selectedFieldId) ?? null;
+  const selectedEffectiveStyle = selectedField ? resolveTextStyle(selectedField) : DEFAULT_TEXT_STYLE;
   const derived = useMemo(() => deriveTemplateDraftFromName(draft.name, draft.imageExt), [draft.name, draft.imageExt]);
   const templateJson = useMemo(
     () => buildTemplateJson({ id: derived.id, name: derived.name, url: derived.url, tagsInput: draft.tagsInput }, fields),
@@ -159,6 +161,31 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     setSelectedFieldId(copy.id);
   };
 
+  const setFieldStyle = <K extends keyof TextStyleSettings>(
+    fieldId: string,
+    key: K,
+    value: TextStyleSettings[K],
+  ) => {
+    setFields((current) =>
+      current.map((field) =>
+        field.id === fieldId
+          ? { ...field, styleOverrides: { ...field.styleOverrides, [key]: value } }
+          : field,
+      ),
+    );
+  };
+
+  const applyStyleToAll = () => {
+    if (!selectedField) {
+      return;
+    }
+
+    // Mirror MemeEditor: copy the *effective* style (defaults + overrides) onto every
+    // field so the result is independent of which keys happened to be in styleOverrides.
+    const effective = resolveTextStyle(selectedField);
+    setFields((current) => current.map((field) => ({ ...field, styleOverrides: { ...effective } })));
+  };
+
   const copyJson = async () => {
     try {
       await navigator.clipboard.writeText(jsonText);
@@ -236,7 +263,17 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
                 onImageLoad={updatePreviewScale}
                 onSelectField={setSelectedFieldId}
                 onFieldRectChange={(fieldId, rect) => updateField(fieldId, rect)}
-                renderField={(field) => <div className="creator-placeholder">{field.placeholder}</div>}
+                renderField={(field) => {
+                  const style = resolveTextStyle(field);
+                  return (
+                    <div
+                      className={`preview-text ${getVerticalAlignClass(style.verticalAlign)}`}
+                      style={getPreviewTextStyle(style, previewScale)}
+                    >
+                      {getPreviewText(field.placeholder, style)}
+                    </div>
+                  );
+                }}
               />
             </Space>
           )}
@@ -278,7 +315,10 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
           <TemplateFieldInspector
             field={selectedField}
             imageSize={imageSize}
+            effectiveStyle={selectedEffectiveStyle}
             onChange={updateField}
+            onStyleChange={setFieldStyle}
+            onApplyStyleToAll={applyStyleToAll}
             onRemove={removeSelectedField}
             onDuplicate={duplicateSelectedField}
           />

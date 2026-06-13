@@ -14,6 +14,19 @@ export interface MemeTextField {
   align: TextAlign;
   /** Clockwise rotation in degrees, applied around the box center. Optional, defaults to 0. */
   rotation?: number;
+  // Optional style fields — all default to DEFAULT_TEXT_STYLE when missing. Authors
+  // can override any of these per-field in the template configurator; only deviations
+  // from the default are persisted to keep template JSON minimal.
+  fontFamily?: string;
+  bold?: boolean;
+  italic?: boolean;
+  uppercase?: boolean;
+  verticalAlign?: VerticalAlign;
+  effect?: TextEffect;
+  outlineColor?: string;
+  outlineWidth?: number;
+  opacity?: number;
+  maxFontSize?: number;
 }
 
 export interface MemeTemplate {
