@@ -24,6 +24,15 @@ function getPreviewText(field: EditableTextField, style: TextStyleSettings) {
 function getPreviewTextStyle(style: TextStyleSettings, scale: number): React.CSSProperties {
   const strokeWidth = Math.max(0, style.outlineWidth * scale);
   const previewFontSize = Math.min(style.fontSize, style.maxFontSize);
+  const glowBlur = Math.max(8, style.outlineWidth * 4) * scale;
+  const glowShadow =
+    style.effect === 'glow'
+      ? Array.from({ length: 3 }, () => `0 0 ${glowBlur}px ${style.outlineColor}`).join(', ')
+      : null;
+  const dropShadow =
+    style.effect === 'shadow'
+      ? `${strokeWidth || 3}px ${strokeWidth || 3}px ${Math.max(4, strokeWidth * 2)}px ${style.outlineColor}`
+      : null;
 
   return {
     fontSize: `${previewFontSize * scale}px`,
@@ -35,10 +44,7 @@ function getPreviewTextStyle(style: TextStyleSettings, scale: number): React.CSS
     opacity: style.opacity,
     textAlign: style.textAlign,
     WebkitTextStroke: style.effect === 'outline' ? `${strokeWidth}px ${style.outlineColor}` : undefined,
-    textShadow:
-      style.effect === 'shadow'
-        ? `${strokeWidth || 3}px ${strokeWidth || 3}px ${Math.max(4, strokeWidth * 2)}px ${style.outlineColor}`
-        : undefined,
+    textShadow: glowShadow ?? dropShadow ?? undefined,
   };
 }
 

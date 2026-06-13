@@ -2,7 +2,7 @@ import { Card, Checkbox, ColorPicker, Form, InputNumber, Radio, Row, Col, Select
 import type { TextAlign, TextEffect, TextStyleSettings, VerticalAlign } from '../types';
 
 const FONT_OPTIONS = ['Impact', 'Arial Black', 'Arial', 'Verdana', 'Comic Sans MS', 'system-ui'];
-const EFFECT_OPTIONS: TextEffect[] = ['outline', 'shadow', 'none'];
+const EFFECT_OPTIONS: TextEffect[] = ['outline', 'shadow', 'glow', 'none'];
 const TEXT_ALIGN_OPTIONS: TextAlign[] = ['left', 'center', 'right'];
 const VERTICAL_ALIGN_OPTIONS: VerticalAlign[] = ['top', 'middle', 'bottom'];
 

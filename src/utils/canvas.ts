@@ -147,11 +147,29 @@ function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField) 
     ctx.shadowOffsetY = Math.max(2, style.outlineWidth);
   }
 
+  const glowBlur = Math.max(8, style.outlineWidth * 4);
+  const glowLineWidth = Math.max(1, style.outlineWidth);
+
   lines.forEach((line, index) => {
     const y = startY + index * lineHeight;
 
     if (style.effect === 'outline' && style.outlineWidth > 0) {
       ctx.strokeText(line, x, y, field.width);
+    }
+
+    if (style.effect === 'glow') {
+      // Stack shadowed strokes to build a soft halo along the glyph contour.
+      ctx.save();
+      ctx.shadowColor = style.outlineColor;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.shadowBlur = glowBlur;
+      ctx.lineWidth = glowLineWidth;
+      ctx.strokeStyle = style.outlineColor;
+      for (let i = 0; i < 3; i += 1) {
+        ctx.strokeText(line, x, y, field.width);
+      }
+      ctx.restore();
     }
 
     ctx.fillText(line, x, y, field.width);

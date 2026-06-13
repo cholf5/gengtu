@@ -1,6 +1,6 @@
 export type TextAlign = 'left' | 'center' | 'right';
 export type VerticalAlign = 'top' | 'middle' | 'bottom';
-export type TextEffect = 'outline' | 'shadow' | 'none';
+export type TextEffect = 'outline' | 'shadow' | 'glow' | 'none';
 
 export interface MemeTextField {
   id: string;
