@@ -2,12 +2,17 @@ import type { MemeTemplate, MemeThumbnailCrop } from '../types';
 import { isMemeTemplate } from '../utils/memeTemplate';
 import { resolveTemplateImageUrl } from '../utils/templateImport';
 
-const THUMBNAIL_RATIO_TOLERANCE = 0.005;
-
 /**
  * Validate an optional thumbnail crop. Returns the crop when it is well-formed,
  * `null` when it should be dropped (warns the caller-supplied label so authors
  * notice in the console), and `undefined` when the field is absent.
+ *
+ * NOTE: we do NOT check that `width / height === 4/3`. The crop is stored in
+ * normalized (0..1) image coordinates, where the ratio between normalized w
+ * and h depends on the source image's own aspect ratio — only the
+ * pixel-space crop is guaranteed 4:3. A non-square image will always produce
+ * a non-4/3 normalized ratio. The Gallery card enforces 4:3 via its CSS
+ * container, so any well-formed crop renders correctly.
  */
 function validateThumbnail(value: unknown, label: string): MemeThumbnailCrop | null | undefined {
   if (value === undefined || value === null) {
@@ -29,10 +34,6 @@ function validateThumbnail(value: unknown, label: string): MemeThumbnailCrop | n
   const { x, y, width, height } = crop as MemeThumbnailCrop;
   if (width <= 0 || height <= 0 || x + width > 1 + 1e-6 || y + height > 1 + 1e-6) {
     console.warn(`Template "${label}" has a thumbnail that escapes the image; ignoring crop.`);
-    return null;
-  }
-  if (Math.abs(width / height - 4 / 3) > THUMBNAIL_RATIO_TOLERANCE) {
-    console.warn(`Template "${label}" thumbnail is not 4:3; ignoring crop.`);
     return null;
   }
   return { x, y, width, height };
