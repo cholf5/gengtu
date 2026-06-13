@@ -83,16 +83,24 @@ describe('template configurator helpers', () => {
 
   it('normalizes whitespace, underscores and stray dashes when deriving the draft', () => {
     expect(deriveTemplateDraftFromFilename('  Two_Buttons   meme .PNG ')).toEqual({
-      id: 'Two-Buttons-meme',
-      name: 'Two Buttons meme',
+      id: 'Two-Buttons-Meme',
+      name: 'Two Buttons Meme',
       url: '/memes/two-buttons-meme.png',
+    });
+  });
+
+  it('title-cases each word so lowercase filenames still produce a friendly Name', () => {
+    expect(deriveTemplateDraftFromFilename('two-buttons.jpg')).toEqual({
+      id: 'Two-Buttons',
+      name: 'Two Buttons',
+      url: '/memes/two-buttons.jpg',
     });
   });
 
   it('handles filenames without extensions', () => {
     expect(deriveTemplateDraftFromFilename('choice road')).toEqual({
-      id: 'choice-road',
-      name: 'choice road',
+      id: 'Choice-Road',
+      name: 'Choice Road',
       url: '/memes/choice-road',
     });
   });

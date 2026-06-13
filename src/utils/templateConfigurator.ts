@@ -110,6 +110,7 @@ export function deriveTemplateDraftFromName(name: string, ext = ''): DerivedTemp
  * Derive Template ID / Name / Image URL from an uploaded file's name.
  *
  * - `Distracted-Boyfriend.jpg` → id `Distracted-Boyfriend`, name `Distracted Boyfriend`, url `/memes/distracted-boyfriend.jpg`
+ * - `two-buttons.jpg` → name `Two Buttons` (each word title-cased even when the filename was lowercase)
  * - Whitespace / `_` / `-` in the filename are folded back to spaces for the human-facing Name.
  * - The image URL is fully lowercased so it matches conventional filesystem paths.
  */
@@ -120,7 +121,12 @@ export function deriveTemplateDraftFromFilename(filename: string): DerivedTempla
   const rawBase = hasExt ? trimmed.slice(0, lastDot) : trimmed;
   const ext = hasExt ? trimmed.slice(lastDot + 1) : '';
 
-  const name = rawBase.replace(/[\s_-]+/g, ' ').trim();
+  const name = rawBase
+    .replace(/[\s_-]+/g, ' ')
+    .trim()
+    .split(' ')
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : word))
+    .join(' ');
   return deriveTemplateDraftFromName(name, ext);
 }
 
