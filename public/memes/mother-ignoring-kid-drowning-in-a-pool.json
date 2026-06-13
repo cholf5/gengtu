@@ -3,6 +3,12 @@
   "name": "Mother Ignoring Kid Drowning In A Pool",
   "url": "/memes/mother-ignoring-kid-drowning-in-a-pool.jpg",
   "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.0256,
+    "width": 1,
+    "height": 0.5683
+  },
   "textFields": [
     {
       "id": "text_1",

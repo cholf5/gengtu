@@ -1,0 +1,34 @@
+{
+  "id": "Whisper-And-Goosebumps",
+  "name": "Whisper And Goosebumps",
+  "url": "/memes/whisper-and-goosebumps.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 1,
+      "y": 207,
+      "width": 599,
+      "height": 119,
+      "fontSize": 40,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 1,
+      "y": 439,
+      "width": 599,
+      "height": 161,
+      "fontSize": 40,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    }
+  ]
+}

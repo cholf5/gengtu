@@ -1,0 +1,34 @@
+{
+  "id": "Support-Tower",
+  "name": "Support Tower",
+  "url": "/memes/support-tower.png",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 0,
+      "y": 0,
+      "width": 267,
+      "height": 70,
+      "fontSize": 40,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "effect": "none"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 186,
+      "y": 276,
+      "width": 199,
+      "height": 130,
+      "fontSize": 40,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "effect": "none"
+    }
+  ]
+}

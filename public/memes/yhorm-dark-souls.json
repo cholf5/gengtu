@@ -1,0 +1,36 @@
+{
+  "id": "Yhorm-Dark-Souls",
+  "name": "Yhorm Dark Souls",
+  "url": "/memes/yhorm-dark-souls.jpg",
+  "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.0813,
+    "width": 1,
+    "height": 0.449
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 240,
+      "y": 392,
+      "width": 613,
+      "height": 386,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 15,
+      "y": 1004,
+      "width": 427,
+      "height": 219,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center"
+    }
+  ]
+}

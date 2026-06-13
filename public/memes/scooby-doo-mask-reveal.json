@@ -1,0 +1,66 @@
+{
+  "id": "Scooby-Doo-Mask-Reveal",
+  "name": "Scooby Doo Mask Reveal",
+  "url": "/memes/scooby-doo-mask-reveal.jpg",
+  "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.3021,
+    "width": 1,
+    "height": 0.5625
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 0,
+      "y": 298,
+      "width": 272,
+      "height": 182,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 448,
+      "y": 295,
+      "width": 272,
+      "height": 182,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Text 3",
+      "x": 3,
+      "y": 754,
+      "width": 272,
+      "height": 182,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_4",
+      "placeholder": "Text 4",
+      "x": 448,
+      "y": 747,
+      "width": 272,
+      "height": 182,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    }
+  ]
+}

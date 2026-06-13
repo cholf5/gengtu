@@ -1,0 +1,57 @@
+{
+  "id": "Left-Exit-12-Off-Ramp",
+  "name": "Left Exit 12 Off Ramp",
+  "url": "/memes/left-exit-12-off-ramp.jpg",
+  "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.0793,
+    "width": 1,
+    "height": 0.7862
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 183,
+      "y": 84,
+      "width": 130,
+      "height": 177,
+      "fontSize": 35,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 404,
+      "y": 86,
+      "width": 182,
+      "height": 183,
+      "fontSize": 35,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Text 3",
+      "x": 253,
+      "y": 570,
+      "width": 359,
+      "height": 130,
+      "fontSize": 35,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow",
+      "rotation": -9
+    }
+  ]
+}

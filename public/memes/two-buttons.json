@@ -1,0 +1,55 @@
+{
+  "id": "Two-Buttons",
+  "name": "Two Buttons",
+  "url": "/memes/two-buttons.jpg",
+  "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0,
+    "width": 1,
+    "height": 0.4956
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 51,
+      "y": 84,
+      "width": 210,
+      "height": 110,
+      "fontSize": 42,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "outlineColor": "#ffffff",
+      "rotation": -16
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Text 3",
+      "x": 23,
+      "y": 750,
+      "width": 552,
+      "height": 115,
+      "fontSize": 42,
+      "color": "#ffffff",
+      "align": "center",
+      "effect": "glow"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 263,
+      "y": 47,
+      "width": 178,
+      "height": 92,
+      "fontSize": 42,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "outlineColor": "#ffffff",
+      "rotation": -16
+    }
+  ]
+}
+

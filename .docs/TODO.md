@@ -16,7 +16,7 @@
 	- [x] Change My Mind
 	- [x] Distracted Boyfriend
 	- [x] Mother Ignoring Kid In A Pool
-	- [ ] Two Buttons
+	- [x] Two Buttons
 - [ ] 做了任何编辑后，退出前都提示用户保存
 - [x] Text box 增加旋转功能
   - [x] ~~旋转后 resize handles 仍在 AABB 角上，没贴在斜框角上~~ — 评估后放弃，imgflip 也没解决；性价比不高，未来想做参考 git log `c797622` 后面的讨论（路径 A：手画 handle + delta 反旋转）。

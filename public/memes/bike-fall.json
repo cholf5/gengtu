@@ -3,6 +3,12 @@
   "name": "Bike Fall",
   "url": "/memes/bike-fall.jpg",
   "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.0449,
+    "width": 1,
+    "height": 0.5515
+  },
   "textFields": [
     {
       "id": "text_1",
@@ -13,7 +19,8 @@
       "height": 101,
       "fontSize": 36,
       "color": "#ffffff",
-      "align": "center"
+      "align": "center",
+      "bold": false
     },
     {
       "id": "text_2",
@@ -24,7 +31,8 @@
       "height": 105,
       "fontSize": 36,
       "color": "#ffffff",
-      "align": "center"
+      "align": "center",
+      "bold": false
     },
     {
       "id": "text_3",
@@ -35,7 +43,8 @@
       "height": 80,
       "fontSize": 36,
       "color": "#ffffff",
-      "align": "center"
+      "align": "center",
+      "bold": false
     }
   ]
 }
