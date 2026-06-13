@@ -1,14 +1,24 @@
-import { Card, Empty, Input, Space, Tag, Typography } from 'antd';
+import { Card, Empty, Input, Segmented, Space, Tag, Typography } from 'antd';
 import type { MemeTemplate } from '../types';
+import type { SortMode } from '../utils/templateUsage';
 
 interface GalleryProps {
   templates: MemeTemplate[];
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onSelectTemplate: (template: MemeTemplate) => void;
+  sortMode: SortMode;
+  onSortModeChange: (mode: SortMode) => void;
 }
 
-export function Gallery({ templates, searchQuery, onSearchChange, onSelectTemplate }: GalleryProps) {
+export function Gallery({
+  templates,
+  searchQuery,
+  onSearchChange,
+  onSelectTemplate,
+  sortMode,
+  onSortModeChange,
+}: GalleryProps) {
   return (
     <section aria-labelledby="gallery-heading">
       <div className="gallery-header">
@@ -26,6 +36,17 @@ export function Gallery({ templates, searchQuery, onSearchChange, onSelectTempla
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="按名称或标签搜索"
           className="gallery-search"
+        />
+      </div>
+
+      <div className="gallery-toolbar">
+        <Segmented<SortMode>
+          value={sortMode}
+          onChange={onSortModeChange}
+          options={[
+            { label: '字母序', value: 'alphabetical' },
+            { label: '常用优先', value: 'frequency' },
+          ]}
         />
       </div>
 

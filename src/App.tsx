@@ -6,6 +6,15 @@ import { MemeEditor } from './components/MemeEditor';
 import { TemplateConfigurator } from './components/TemplateConfigurator';
 import { loadMemeTemplates } from './memes';
 import type { MemeTemplate } from './types';
+import {
+  getSortMode,
+  getTemplateUsage,
+  recordTemplateUsage,
+  setSortMode as persistSortMode,
+  sortTemplates,
+  type SortMode,
+  type TemplateUsageMap,
+} from './utils/templateUsage';
 
 function getInitialView() {
   return window.location.pathname.endsWith('/create') ? 'create' : 'gallery';
@@ -16,6 +25,8 @@ function App() {
   const [selectedTemplate, setSelectedTemplate] = useState<MemeTemplate | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [templates, setTemplates] = useState<MemeTemplate[]>([]);
+  const [sortMode, setSortModeState] = useState<SortMode>(() => getSortMode());
+  const [usage, setUsage] = useState<TemplateUsageMap>(() => getTemplateUsage());
 
   useEffect(() => {
     const handlePopState = () => {
@@ -39,16 +50,27 @@ function App() {
 
   const filteredTemplates = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
+    const sorted = sortTemplates(templates, sortMode, usage);
 
     if (!query) {
-      return templates;
+      return sorted;
     }
 
-    return templates.filter((template) => {
+    return sorted.filter((template) => {
       const searchable = [template.name, template.id, ...template.tags].join(' ').toLowerCase();
       return searchable.includes(query);
     });
-  }, [templates, searchQuery]);
+  }, [templates, searchQuery, sortMode, usage]);
+
+  const handleSortModeChange = (mode: SortMode) => {
+    setSortModeState(mode);
+    persistSortMode(mode);
+  };
+
+  const handleSelectTemplate = (template: MemeTemplate) => {
+    setUsage(recordTemplateUsage(template.id));
+    setSelectedTemplate(template);
+  };
 
   const openCreate = () => {
     window.history.pushState({}, '', `${import.meta.env.BASE_URL.replace(/\/$/, '')}/create`);
@@ -94,7 +116,9 @@ function App() {
               templates={filteredTemplates}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
-              onSelectTemplate={setSelectedTemplate}
+              onSelectTemplate={handleSelectTemplate}
+              sortMode={sortMode}
+              onSortModeChange={handleSortModeChange}
             />
           )}
         </Layout.Content>
