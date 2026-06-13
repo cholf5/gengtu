@@ -99,15 +99,16 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, field: EditableTex
 }
 
 function getStartY(field: EditableTextField, totalHeight: number, lineHeight: number, verticalAlign: TextStyleSettings['verticalAlign']) {
+  // Coordinates are local to the field's center (see drawTextField's translate).
   if (verticalAlign === 'top') {
-    return field.y + lineHeight / 2;
+    return -field.height / 2 + lineHeight / 2;
   }
 
   if (verticalAlign === 'bottom') {
-    return field.y + field.height - totalHeight + lineHeight / 2;
+    return field.height / 2 - totalHeight + lineHeight / 2;
   }
 
-  return field.y + field.height / 2 - totalHeight / 2 + lineHeight / 2;
+  return -totalHeight / 2 + lineHeight / 2;
 }
 
 function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField) {
@@ -116,10 +117,20 @@ function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField) 
   const { fontSize, lineHeight, lines } = fitText(ctx, text, field, style);
   const totalHeight = lines.length * lineHeight;
   const startY = getStartY(field, totalHeight, lineHeight, style.verticalAlign);
+  // x is also relative to the field's center.
   const x =
-    style.textAlign === 'left' ? field.x : style.textAlign === 'right' ? field.x + field.width : field.x + field.width / 2;
+    style.textAlign === 'left'
+      ? -field.width / 2
+      : style.textAlign === 'right'
+        ? field.width / 2
+        : 0;
+  const rotation = field.rotation ?? 0;
 
   ctx.save();
+  ctx.translate(field.x + field.width / 2, field.y + field.height / 2);
+  if (rotation) {
+    ctx.rotate((rotation * Math.PI) / 180);
+  }
   ctx.globalAlpha = style.opacity;
   ctx.font = getCanvasFont(style, fontSize);
   ctx.textAlign = style.textAlign;

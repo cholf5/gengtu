@@ -8,6 +8,13 @@ interface TextBoxOverlayProps {
   previewScale: number;
   selected: boolean;
   zIndex: number;
+  /** Clockwise rotation in degrees, applied to the visible frame around its center. */
+  rotation?: number;
+  /**
+   * Class applied to the visible inner frame (dashed border / selection ring).
+   * The Rnd outer stays an invisible axis-aligned hit-box so drag/resize math
+   * keeps working — only the inner frame rotates.
+   */
   className?: string;
   minWidth?: number;
   minHeight?: number;
@@ -22,6 +29,7 @@ export function TextBoxOverlay({
   previewScale,
   selected,
   zIndex,
+  rotation = 0,
   className = 'editable-text-box',
   minWidth = 40,
   minHeight = 24,
@@ -34,7 +42,7 @@ export function TextBoxOverlay({
   return (
     <Rnd
       bounds="parent"
-      className={`${className} ${selected ? 'is-selected' : ''}`}
+      className="text-box-root"
       position={{ x: previewRect.x, y: previewRect.y }}
       size={{ width: previewRect.width, height: previewRect.height }}
       style={{ zIndex }}
@@ -63,7 +71,12 @@ export function TextBoxOverlay({
         onChange(clampBoxToImage(next, imageSize, { minWidth, minHeight }));
       }}
     >
-      {children}
+      <div
+        className={`text-box-frame ${className} ${selected ? 'is-selected' : ''}`}
+        style={rotation ? { transform: `rotate(${rotation}deg)` } : undefined}
+      >
+        {children}
+      </div>
     </Rnd>
   );
 }

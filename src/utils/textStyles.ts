@@ -25,6 +25,7 @@ export function createEditableFields(textFields: MemeTextField[]): EditableTextF
     y: field.y,
     width: field.width,
     height: field.height,
+    rotation: field.rotation ?? 0,
     zIndex: index + 1,
     styleOverrides: {
       fontSize: field.fontSize,
@@ -47,6 +48,7 @@ export function createNewEditableField(index: number, imageWidth: number, imageH
     y: Math.max(0, imageHeight / 2 - height / 2),
     width,
     height,
+    rotation: 0,
     zIndex: index,
     styleOverrides: {},
   };

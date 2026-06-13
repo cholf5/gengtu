@@ -18,6 +18,7 @@ const field: EditableTextField = {
   y: 20.6,
   width: 100.4,
   height: 50.5,
+  rotation: 0,
   zIndex: 1,
   styleOverrides: {},
 };
@@ -35,6 +36,7 @@ describe('template configurator helpers', () => {
       height: 80,
       x: 200,
       y: 210,
+      rotation: 0,
     });
   });
 
@@ -63,6 +65,12 @@ describe('template configurator helpers', () => {
         },
       ],
     });
+  });
+
+  it('only writes rotation into JSON when it is non-zero', () => {
+    const rotated: EditableTextField = { ...field, rotation: 12.4 };
+    const json = buildTemplateJson({ id: 'demo', name: 'Demo', url: '/memes/demo.jpg', tagsInput: '' }, [rotated]);
+    expect(json.textFields[0]).toMatchObject({ rotation: 12 });
   });
 
   it('derives template draft fields from an upload filename', () => {

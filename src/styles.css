@@ -171,6 +171,19 @@ body {
   box-shadow: 0 0 0 2px var(--color-selection-ring);
 }
 
+/* react-rnd outer stays axis-aligned (drag/resize math relies on it).
+   The visible frame inside is what rotates — it carries the dashed border
+   and selection ring. */
+.text-box-root {
+  cursor: move;
+}
+
+.text-box-frame {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+}
+
 .creator-placeholder {
   display: grid;
   width: 100%;

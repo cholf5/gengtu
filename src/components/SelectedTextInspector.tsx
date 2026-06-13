@@ -1,4 +1,4 @@
-import { Button, Card, Form, Input, Space, Typography } from 'antd';
+import { Button, Card, Col, Form, Input, InputNumber, Row, Slider, Space, Typography } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { EditableTextField, TextStyleSettings } from '../types';
 import { TextStyleInspector } from './TextStyleInspector';
@@ -7,6 +7,7 @@ interface SelectedTextInspectorProps {
   field: EditableTextField;
   effectiveStyle: TextStyleSettings;
   onTextChange: (value: string) => void;
+  onRotationChange: (value: number) => void;
   onStyleChange: <K extends keyof TextStyleSettings>(key: K, value: TextStyleSettings[K]) => void;
   onRemove: () => void;
   onBringToTop: () => void;
@@ -17,6 +18,7 @@ export function SelectedTextInspector({
   field,
   effectiveStyle,
   onTextChange,
+  onRotationChange,
   onStyleChange,
   onRemove,
   onBringToTop,
@@ -39,6 +41,35 @@ export function SelectedTextInspector({
           autoSize={{ minRows: 2, maxRows: 5 }}
           placeholder="Content"
         />
+
+        <Form layout="horizontal" size="small" colon={false} labelAlign="left" style={{ marginBottom: 0 }}>
+          <Form.Item label="Rotation" labelCol={{ flex: '70px' }} style={{ marginBottom: 0 }}>
+            <Row gutter={8} align="middle" wrap={false}>
+              <Col flex="auto">
+                <Slider
+                  min={-180}
+                  max={180}
+                  step={1}
+                  value={field.rotation}
+                  onChange={(value) => onRotationChange(typeof value === 'number' ? value : field.rotation)}
+                  tooltip={{ formatter: (value) => `${value}°` }}
+                />
+              </Col>
+              <Col flex="84px">
+                <InputNumber
+                  min={-360}
+                  max={360}
+                  step={1}
+                  value={Math.round(field.rotation)}
+                  onChange={(value) => onRotationChange(typeof value === 'number' ? value : 0)}
+                  formatter={(value) => `${value}°`}
+                  parser={(value) => Number((value ?? '').toString().replace(/[^\d-]/g, '')) || 0}
+                  style={{ width: '100%' }}
+                />
+              </Col>
+            </Row>
+          </Form.Item>
+        </Form>
 
         <TextStyleInspector title="Text Settings" style={effectiveStyle} onChange={onStyleChange} />
 

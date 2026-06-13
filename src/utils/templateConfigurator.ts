@@ -43,6 +43,7 @@ export function createConfiguratorTextField(index: number, imageWidth: number, i
     y: Math.round(imageHeight / 2 - height / 2),
     width,
     height,
+    rotation: 0,
     zIndex: index,
     styleOverrides: {},
   };
@@ -57,6 +58,7 @@ export function buildTemplateJson(draft: TemplateDraft, fields: EditableTextFiel
     textFields: fields.map((field) => {
       const rect = roundRect(field);
       const fieldId = field.id.trim();
+      const rotation = Math.round(field.rotation ?? 0);
       return {
         id: fieldId,
         placeholder: field.placeholder.trim() || fieldId,
@@ -67,6 +69,9 @@ export function buildTemplateJson(draft: TemplateDraft, fields: EditableTextFiel
         fontSize: 36,
         color: '#ffffff',
         align: 'center',
+        // Only persist rotation when it deviates from the default — keeps existing
+        // template JSONs byte-for-byte unchanged when re-exported untouched.
+        ...(rotation !== 0 ? { rotation } : {}),
       };
     }),
   };

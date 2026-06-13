@@ -32,7 +32,8 @@ function isMemeTemplate(value: unknown): value is MemeTemplate {
         typeof field.height === 'number' &&
         typeof field.fontSize === 'number' &&
         typeof field.color === 'string' &&
-        ['left', 'center', 'right'].includes(field.align)
+        ['left', 'center', 'right'].includes(field.align) &&
+        (field.rotation === undefined || typeof field.rotation === 'number')
       );
     })
   );

@@ -12,6 +12,8 @@ export interface MemeTextField {
   fontSize: number;
   color: string;
   align: TextAlign;
+  /** Clockwise rotation in degrees, applied around the box center. Optional, defaults to 0. */
+  rotation?: number;
 }
 
 export interface MemeTemplate {
@@ -48,6 +50,8 @@ export interface EditableTextField {
   y: number;
   width: number;
   height: number;
+  /** Clockwise rotation in degrees applied around the box center. */
+  rotation: number;
   zIndex: number;
   styleOverrides: TextStyleOverrides;
 }

@@ -1,4 +1,4 @@
-import { Button, Card, Col, Form, Input, InputNumber, Row, Typography } from 'antd';
+import { Button, Card, Col, Form, Input, InputNumber, Row, Slider, Typography } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { EditableTextField } from '../types';
 import type { Size } from '../utils/geometry';
@@ -69,7 +69,7 @@ export function TemplateFieldInspector({ field, imageSize, onChange, onRemove }:
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label="W" labelCol={{ flex: '40px' }} style={{ ...COMPACT_ITEM_STYLE, marginBottom: 0 }}>
+            <Form.Item label="W" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
               <InputNumber
                 min={1}
                 max={imageSize.width}
@@ -80,7 +80,7 @@ export function TemplateFieldInspector({ field, imageSize, onChange, onRemove }:
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label="H" labelCol={{ flex: '40px' }} style={{ ...COMPACT_ITEM_STYLE, marginBottom: 0 }}>
+            <Form.Item label="H" labelCol={{ flex: '40px' }} style={COMPACT_ITEM_STYLE}>
               <InputNumber
                 min={1}
                 max={imageSize.height}
@@ -91,6 +91,35 @@ export function TemplateFieldInspector({ field, imageSize, onChange, onRemove }:
             </Form.Item>
           </Col>
         </Row>
+
+        <Form.Item label="Rotation" style={{ ...COMPACT_ITEM_STYLE, marginBottom: 0 }}>
+          <Row gutter={8} align="middle" wrap={false}>
+            <Col flex="auto">
+              <Slider
+                min={-180}
+                max={180}
+                step={1}
+                value={field.rotation}
+                onChange={(value) =>
+                  onChange(field.id, { rotation: typeof value === 'number' ? value : field.rotation })
+                }
+                tooltip={{ formatter: (value) => `${value}°` }}
+              />
+            </Col>
+            <Col flex="84px">
+              <InputNumber
+                min={-360}
+                max={360}
+                step={1}
+                value={Math.round(field.rotation)}
+                onChange={(value) => onChange(field.id, { rotation: typeof value === 'number' ? value : 0 })}
+                formatter={(value) => `${value}°`}
+                parser={(value) => Number((value ?? '').toString().replace(/[^\d-]/g, '')) || 0}
+                style={{ width: '100%' }}
+              />
+            </Col>
+          </Row>
+        </Form.Item>
       </Form>
     </Card>
   );

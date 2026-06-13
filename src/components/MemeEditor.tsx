@@ -88,6 +88,11 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
     markEdited();
   };
 
+  const setFieldRotation = (fieldId: string, value: number) => {
+    setFields((current) => updateField(current, fieldId, (field) => ({ ...field, rotation: value })));
+    markEdited();
+  };
+
   const setFieldStyle = <K extends keyof TextStyleSettings>(
     fieldId: string,
     key: K,
@@ -230,6 +235,7 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               field={selectedField}
               effectiveStyle={resolveTextStyle(selectedField)}
               onTextChange={(value) => setFieldValue(selectedField.id, value)}
+              onRotationChange={(value) => setFieldRotation(selectedField.id, value)}
               onStyleChange={(key, value) => setFieldStyle(selectedField.id, key, value)}
               onRemove={removeSelectedField}
               onBringToTop={bringSelectedToTop}

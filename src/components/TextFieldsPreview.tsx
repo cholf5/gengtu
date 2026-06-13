@@ -44,6 +44,7 @@ export function TextFieldsPreview({
           previewScale={previewScale}
           selected={field.id === selectedFieldId}
           zIndex={field.zIndex}
+          rotation={field.rotation}
           className={boxClassName}
           minWidth={60}
           minHeight={32}
