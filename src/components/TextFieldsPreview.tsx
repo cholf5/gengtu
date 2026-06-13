@@ -11,6 +11,12 @@ interface TextFieldsPreviewProps {
   imageSize: Size;
   previewScale: number;
   boxClassName?: string;
+  /**
+   * Optional content rendered above the image but below every text box.
+   * Currently used by the configurator to layer the gallery thumbnail crop
+   * frame; left undefined in MemeEditor where the preview shows the full image.
+   */
+  cropOverlay?: React.ReactNode;
   onImageLoad: () => void;
   onSelectField: (fieldId: string) => void;
   onFieldRectChange: (fieldId: string, rect: Pick<EditableTextField, 'x' | 'y' | 'width' | 'height'>) => void;
@@ -26,6 +32,7 @@ export function TextFieldsPreview({
   imageSize,
   previewScale,
   boxClassName,
+  cropOverlay,
   onImageLoad,
   onSelectField,
   onFieldRectChange,
@@ -36,6 +43,7 @@ export function TextFieldsPreview({
   return (
     <div className="meme-preview">
       <img ref={imageRef} src={imageUrl} alt={imageAlt} onLoad={onImageLoad} />
+      {cropOverlay}
       {sortedFields.map((field) => (
         <TextBoxOverlay
           key={field.id}

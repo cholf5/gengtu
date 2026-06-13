@@ -1,4 +1,4 @@
-import type { MemeTemplate } from '../types';
+import type { MemeTemplate, MemeThumbnailCrop } from '../types';
 
 function resolveTemplateUrl(url: string) {
   if (!url.startsWith('/')) {
@@ -6,6 +6,42 @@ function resolveTemplateUrl(url: string) {
   }
 
   return `${import.meta.env.BASE_URL}${url.slice(1)}`;
+}
+
+const THUMBNAIL_RATIO_TOLERANCE = 0.005;
+
+/**
+ * Validate an optional thumbnail crop. Returns the crop when it is well-formed,
+ * `null` when it should be dropped (warns the caller-supplied label so authors
+ * notice in the console), and `undefined` when the field is absent.
+ */
+function validateThumbnail(value: unknown, label: string): MemeThumbnailCrop | null | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value !== 'object') {
+    console.warn(`Template "${label}" has a non-object thumbnail; ignoring.`);
+    return null;
+  }
+  const crop = value as Partial<MemeThumbnailCrop>;
+  const numbers: (keyof MemeThumbnailCrop)[] = ['x', 'y', 'width', 'height'];
+  for (const key of numbers) {
+    const num = crop[key];
+    if (typeof num !== 'number' || !Number.isFinite(num) || num < 0 || num > 1) {
+      console.warn(`Template "${label}" has an out-of-range thumbnail.${key}; ignoring crop.`);
+      return null;
+    }
+  }
+  const { x, y, width, height } = crop as MemeThumbnailCrop;
+  if (width <= 0 || height <= 0 || x + width > 1 + 1e-6 || y + height > 1 + 1e-6) {
+    console.warn(`Template "${label}" has a thumbnail that escapes the image; ignoring crop.`);
+    return null;
+  }
+  if (Math.abs(width / height - 4 / 3) > THUMBNAIL_RATIO_TOLERANCE) {
+    console.warn(`Template "${label}" thumbnail is not 4:3; ignoring crop.`);
+    return null;
+  }
+  return { x, y, width, height };
 }
 
 function isMemeTemplate(value: unknown): value is MemeTemplate {
@@ -88,7 +124,14 @@ export async function loadMemeTemplates(): Promise<MemeTemplate[]> {
         console.warn(`Skipped invalid meme template: ${label}`);
         return null;
       }
-      return { ...entry, url: resolveTemplateUrl(entry.url) };
+      const thumbnail = validateThumbnail((entry as { thumbnail?: unknown }).thumbnail, entry.id);
+      const { thumbnail: _stripped, ...rest } = entry as MemeTemplate & { thumbnail?: unknown };
+      void _stripped;
+      const next: MemeTemplate = { ...rest, url: resolveTemplateUrl(entry.url) };
+      if (thumbnail) {
+        next.thumbnail = thumbnail;
+      }
+      return next;
     })
     .filter((template): template is MemeTemplate => template !== null)
     .sort((a, b) => a.name.localeCompare(b.name));

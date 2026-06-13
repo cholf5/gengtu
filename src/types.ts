@@ -34,7 +34,20 @@ export interface MemeTemplate {
   name: string;
   url: string;
   tags: string[];
+  /**
+   * Optional crop rectangle for the Gallery card thumbnail, in 0..1 normalized
+   * image coordinates. When omitted, the card falls back to `object-fit: cover`
+   * (centered crop). Always 4:3 by construction.
+   */
+  thumbnail?: MemeThumbnailCrop;
   textFields: MemeTextField[];
+}
+
+export interface MemeThumbnailCrop {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export interface TextStyleSettings {

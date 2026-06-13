@@ -57,7 +57,7 @@ export function Gallery({
               key={template.id}
               hoverable
               onClick={() => onSelectTemplate(template)}
-              cover={<img src={template.url} alt="" loading="lazy" className="template-cover" />}
+              cover={renderTemplateCover(template)}
               styles={{ body: { padding: 14 } }}
             >
               <Card.Meta
@@ -79,5 +79,36 @@ export function Gallery({
         <Empty description="没有找到匹配的模板。换个关键词试试。" />
       )}
     </section>
+  );
+}
+
+/**
+ * Gallery card cover. When the template has a `thumbnail` crop we wrap the
+ * image in a 4:3 container and scale + offset it via percentages so only the
+ * chosen region is visible. No JS layout work, no naturalWidth needed —
+ * percentages are relative to the same parent for both `width/height` (used
+ * to up-scale the image past 100%) and `marginLeft/marginTop` (used to push
+ * the unwanted region outside the parent's `overflow: hidden`).
+ */
+function renderTemplateCover(template: MemeTemplate) {
+  const crop = template.thumbnail;
+  if (!crop) {
+    return <img src={template.url} alt="" loading="lazy" className="template-cover" />;
+  }
+
+  return (
+    <div className="template-cover-crop">
+      <img
+        src={template.url}
+        alt=""
+        loading="lazy"
+        style={{
+          width: `${100 / crop.width}%`,
+          height: `${100 / crop.height}%`,
+          marginLeft: `${(-crop.x * 100) / crop.width}%`,
+          marginTop: `${(-crop.y * 100) / crop.height}%`,
+        }}
+      />
+    </div>
   );
 }

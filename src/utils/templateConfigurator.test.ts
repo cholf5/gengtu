@@ -9,6 +9,7 @@ import {
   extractFileExtension,
   getNextTextFieldIndex,
   parseTags,
+  stringifyTemplateJson,
 } from './templateConfigurator';
 
 const field: EditableTextField = {
@@ -107,6 +108,40 @@ describe('template configurator helpers', () => {
     const rotated: EditableTextField = { ...field, rotation: 12.4 };
     const json = buildTemplateJson({ id: 'demo', name: 'Demo', url: '/memes/demo.jpg', tagsInput: '' }, [rotated]);
     expect(json.textFields[0]).toMatchObject({ rotation: 12 });
+  });
+
+  it('omits thumbnail from the JSON root when no crop is provided', () => {
+    const json = buildTemplateJson({ id: 'demo', name: 'Demo', url: '/memes/demo.jpg', tagsInput: '' }, [field]);
+    expect(json).not.toHaveProperty('thumbnail');
+  });
+
+  it('serializes thumbnail between tags and textFields when provided', () => {
+    const json = buildTemplateJson(
+      { id: 'demo', name: 'Demo', url: '/memes/demo.jpg', tagsInput: 'classic' },
+      [field],
+      { x: 0.25, y: 0, width: 0.5, height: 0.375 },
+    );
+    expect(json.thumbnail).toEqual({ x: 0.25, y: 0, width: 0.5, height: 0.375 });
+
+    // Insertion order is what JSON.stringify follows; lock it down so future
+    // refactors don't accidentally reshuffle the JSON shape.
+    const text = stringifyTemplateJson(json);
+    const tagsAt = text.indexOf('"tags"');
+    const thumbAt = text.indexOf('"thumbnail"');
+    const fieldsAt = text.indexOf('"textFields"');
+    expect(tagsAt).toBeGreaterThan(0);
+    expect(thumbAt).toBeGreaterThan(tagsAt);
+    expect(fieldsAt).toBeGreaterThan(thumbAt);
+  });
+
+  it('rounds thumbnail values to 4 decimal places', () => {
+    const json = buildTemplateJson({ id: 'demo', name: 'Demo', url: '/memes/demo.jpg', tagsInput: '' }, [field], {
+      x: 0.123456789,
+      y: 0.0001,
+      width: 0.5000005,
+      height: 0.37500038,
+    });
+    expect(json.thumbnail).toEqual({ x: 0.1235, y: 0.0001, width: 0.5, height: 0.375 });
   });
 
   it('derives template draft fields from an upload filename', () => {

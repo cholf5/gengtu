@@ -1,4 +1,4 @@
-import type { EditableTextField, MemeTemplate, MemeTextField, TextStyleSettings } from '../types';
+import type { EditableTextField, MemeTemplate, MemeTextField, MemeThumbnailCrop, TextStyleSettings } from '../types';
 import { clampBoxToImage, roundRect, type Size } from './geometry';
 import { DEFAULT_TEXT_STYLE, resolveTextStyle } from './textStyles';
 
@@ -93,12 +93,19 @@ export function duplicateTextField(
   };
 }
 
-export function buildTemplateJson(draft: TemplateDraft, fields: EditableTextField[]): MemeTemplate {
-  return {
+export function buildTemplateJson(
+  draft: TemplateDraft,
+  fields: EditableTextField[],
+  thumbnail?: MemeThumbnailCrop,
+): MemeTemplate {
+  // Order matters: JSON.stringify uses insertion order, and we want the
+  // serialized shape to read id → name → url → tags → thumbnail → textFields.
+  const template: MemeTemplate = {
     id: draft.id.trim(),
     name: draft.name.trim(),
     url: draft.url.trim(),
     tags: parseTags(draft.tagsInput),
+    ...(thumbnail ? { thumbnail: roundThumbnailCrop(thumbnail) } : {}),
     textFields: fields.map((field) => {
       const rect = roundRect(field);
       const fieldId = field.id.trim();
@@ -117,6 +124,22 @@ export function buildTemplateJson(draft: TemplateDraft, fields: EditableTextFiel
         ...(rotation !== 0 ? { rotation } : {}),
       };
     }),
+  };
+  return template;
+}
+
+/**
+ * Round a normalized 0..1 thumbnail crop to 4 decimals. Avoids endless
+ * trailing decimals in JSON like `0.30000000000000004`, while still keeping
+ * sub-pixel precision on every realistic image (≥ 10000 px wide).
+ */
+function roundThumbnailCrop(crop: MemeThumbnailCrop): MemeThumbnailCrop {
+  const round = (value: number) => Math.round(value * 10000) / 10000;
+  return {
+    x: round(crop.x),
+    y: round(crop.y),
+    width: round(crop.width),
+    height: round(crop.height),
   };
 }
 

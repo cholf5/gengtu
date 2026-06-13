@@ -111,6 +111,23 @@ body {
   display: block;
 }
 
+/* Cropped variant: fixed 4:3 frame with the image scaled past 100% and offset
+   by negative margins so only the author-chosen region is visible. */
+.template-cover-crop {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--color-image-placeholder);
+  overflow: hidden;
+  display: block;
+}
+
+.template-cover-crop > img {
+  display: block;
+  /* The wrapper enforces 4:3, the inline width/height/margins handle scaling
+     and offset. object-fit: fill skips any second-pass cropping. */
+  object-fit: fill;
+}
+
 /* ---------- Editor / Configurator shared ---------- */
 
 .editor-toolbar {
@@ -175,6 +192,31 @@ body {
 .creator-text-box.is-selected {
   border-style: solid;
   box-shadow: 0 0 0 2px var(--color-selection-ring);
+}
+
+/* Gallery thumbnail crop frame — sits between the image and text boxes. The
+   inner frame paints a giant box-shadow as the dimmed overlay outside the
+   crop so the author always sees what will end up on the gallery card. */
+.thumbnail-crop-root {
+  /* Sits below text boxes (which use zIndex >= 1) but above the image. */
+  z-index: 0;
+}
+
+.thumbnail-crop-frame {
+  width: 100%;
+  height: 100%;
+  border: 2px dashed #fff;
+  border-radius: 6px;
+  box-sizing: border-box;
+  cursor: move;
+  pointer-events: auto;
+}
+
+/* Optional dimming of the area outside the crop frame. Toggled from the
+   "Preview shading" switch so adding text boxes outside the crop stays
+   unobstructed by default. */
+.thumbnail-crop-frame.is-shaded {
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
 }
 
 /* react-rnd outer stays axis-aligned (drag/resize math relies on it).

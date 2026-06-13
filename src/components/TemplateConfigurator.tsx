@@ -1,10 +1,10 @@
 import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, InboxOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Button, Card, Form, Input, Space, Typography, Upload, message } from 'antd';
+import { Alert, Button, Card, Form, Input, Space, Switch, Typography, Upload, message } from 'antd';
 import type { UploadProps } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
-import type { EditableTextField, TextStyleSettings } from '../types';
+import type { EditableTextField, MemeThumbnailCrop, TextStyleSettings } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
-import { clampBoxToImage } from '../utils/geometry';
+import { clampBoxToImage, clampCropTo43, cropToNormalized, maxCenteredCropTo43, type Rect } from '../utils/geometry';
 import {
   buildTemplateJson,
   createConfiguratorTextField,
@@ -18,6 +18,7 @@ import {
 import { DEFAULT_TEXT_STYLE, getPreviewText, getPreviewTextStyle, getVerticalAlignClass, resolveTextStyle } from '../utils/textStyles';
 import { TemplateFieldInspector } from './TemplateFieldInspector';
 import { TextFieldsPreview } from './TextFieldsPreview';
+import { ThumbnailCropOverlay } from './ThumbnailCropOverlay';
 
 interface TemplateConfiguratorProps {
   onBack: () => void;
@@ -41,15 +42,33 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
   const [imageUrl, setImageUrl] = useState('');
   const [fields, setFields] = useState<EditableTextField[]>([]);
   const [selectedFieldId, setSelectedFieldId] = useState('');
+  const [cropEnabled, setCropEnabled] = useState(false);
+  // Crop rect is stored in NATURAL image pixels, mirroring how text boxes are
+  // tracked. Normalization to 0..1 happens only when serializing to JSON.
+  const [cropRect, setCropRect] = useState<Rect | null>(null);
+  // Off by default — the dimmed shading helps preview the gallery card but
+  // gets in the way when adding text boxes outside the crop.
+  const [cropShading, setCropShading] = useState(false);
   const { imageRef, imageSize, previewScale, updatePreviewScale } = useImagePreviewScale(imageUrl);
   const [api, contextHolder] = message.useMessage();
 
   const selectedField = fields.find((field) => field.id === selectedFieldId) ?? null;
   const selectedEffectiveStyle = selectedField ? resolveTextStyle(selectedField) : DEFAULT_TEXT_STYLE;
   const derived = useMemo(() => deriveTemplateDraftFromName(draft.name, draft.imageExt), [draft.name, draft.imageExt]);
+  const thumbnailCrop = useMemo<MemeThumbnailCrop | undefined>(() => {
+    if (!cropEnabled || !cropRect || imageSize.width <= 0 || imageSize.height <= 0) {
+      return undefined;
+    }
+    return cropToNormalized(cropRect, imageSize);
+  }, [cropEnabled, cropRect, imageSize]);
   const templateJson = useMemo(
-    () => buildTemplateJson({ id: derived.id, name: derived.name, url: derived.url, tagsInput: draft.tagsInput }, fields),
-    [derived, draft.tagsInput, fields],
+    () =>
+      buildTemplateJson(
+        { id: derived.id, name: derived.name, url: derived.url, tagsInput: draft.tagsInput },
+        fields,
+        thumbnailCrop,
+      ),
+    [derived, draft.tagsInput, fields, thumbnailCrop],
   );
   const jsonText = useMemo(() => stringifyTemplateJson(templateJson), [templateJson]);
   const warnings = [
@@ -84,6 +103,9 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
       });
       setFields([]);
       setSelectedFieldId('');
+      setCropEnabled(false);
+      setCropRect(null);
+      setCropShading(false);
 
       const fromFile = deriveTemplateDraftFromFilename(file.name);
       const ext = extractFileExtension(file.name);
@@ -140,6 +162,36 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     setFields((current) => [...current, field]);
     setSelectedFieldId(field.id);
   };
+
+  const handleCropToggle = (enabled: boolean) => {
+    setCropEnabled(enabled);
+    if (enabled && !cropRect && imageSize.width > 0 && imageSize.height > 0) {
+      setCropRect(maxCenteredCropTo43(imageSize));
+    }
+  };
+
+  const handleCropReset = () => {
+    if (imageSize.width <= 0 || imageSize.height <= 0) {
+      return;
+    }
+    setCropRect(maxCenteredCropTo43(imageSize));
+  };
+
+  // Once the image's natural size is known, seed the crop rect so the overlay
+  // shows up at full 4:3 the moment the user flips the Switch (we run this
+  // effect after every imageSize change to also re-clamp if the user replaced
+  // the image while crop was on).
+  useEffect(() => {
+    if (imageSize.width <= 0 || imageSize.height <= 0) {
+      return;
+    }
+    setCropRect((current) => {
+      if (!current) {
+        return cropEnabled ? maxCenteredCropTo43(imageSize) : null;
+      }
+      return clampCropTo43(current, imageSize);
+    });
+  }, [imageSize, cropEnabled]);
 
   const removeSelectedField = () => {
     if (!selectedField) {
@@ -260,6 +312,17 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
                 imageSize={imageSize}
                 previewScale={previewScale}
                 boxClassName="creator-text-box"
+                cropOverlay={
+                  cropEnabled && cropRect ? (
+                    <ThumbnailCropOverlay
+                      rect={cropRect}
+                      imageSize={imageSize}
+                      previewScale={previewScale}
+                      showShading={cropShading}
+                      onChange={setCropRect}
+                    />
+                  ) : null
+                }
                 onImageLoad={updatePreviewScale}
                 onSelectField={setSelectedFieldId}
                 onFieldRectChange={(fieldId, rect) => updateField(fieldId, rect)}
@@ -310,6 +373,44 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
                 />
               </Form.Item>
             </Form>
+          </Card>
+
+          <Card
+            size="small"
+            title="Gallery thumbnail"
+            extra={
+              <Switch
+                size="small"
+                checked={cropEnabled}
+                disabled={!imageUrl}
+                onChange={handleCropToggle}
+                aria-label="Customize gallery thumbnail crop"
+              />
+            }
+          >
+            {cropEnabled ? (
+              <Space direction="vertical" size="small" className="full-width-stack">
+                <Typography.Paragraph type="secondary" style={{ margin: 0 }}>
+                  拖动预览图上的虚线 4:3 框，调整 Gallery 卡片显示的区域。
+                </Typography.Paragraph>
+                <Space size="small" align="center">
+                  <Switch
+                    size="small"
+                    checked={cropShading}
+                    onChange={setCropShading}
+                    aria-label="Toggle crop preview shading"
+                  />
+                  <Typography.Text type="secondary">Preview shading</Typography.Text>
+                </Space>
+                <Button size="small" onClick={handleCropReset} disabled={!imageUrl}>
+                  Reset to center
+                </Button>
+              </Space>
+            ) : (
+              <Typography.Paragraph type="secondary" style={{ margin: 0 }}>
+                关闭时，Gallery 卡片按默认居中 4:3 裁剪显示。打开后可手动选取裁剪区域。
+              </Typography.Paragraph>
+            )}
           </Card>
 
           <TemplateFieldInspector
