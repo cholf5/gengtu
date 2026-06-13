@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.5",
+    "@vercel/analytics": "^2.0.1",
     "@vitejs/plugin-react": "latest",
     "antd": "^6.4.3",
     "react": "latest",

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Empty, Space, Typography } from 'antd';
 import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, PlusOutlined } from '@ant-design/icons';
+import { track } from '@vercel/analytics';
 import type { EditableTextField, MemeTemplate, TextStyleSettings } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
 import { copyEditableMemeToClipboard, downloadEditableMemeImage } from '../utils/canvas';
@@ -141,9 +142,11 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
       }
 
       setShouldWarnBeforeUnload(false);
+      track('meme_export', { templateId: template.id, action, ok: true });
     } catch (error) {
       const fallback = action === 'copy' ? '复制不可用，请下载图片。' : '生成图片失败，请稍后重试。';
       setStatusMessage(error instanceof Error ? error.message : fallback);
+      track('meme_export', { templateId: template.id, action, ok: false });
     } finally {
       setIsBusy(false);
     }
