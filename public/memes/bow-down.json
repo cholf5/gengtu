@@ -1,0 +1,63 @@
+{
+  "id": "Bow-Down",
+  "name": "Bow Down",
+  "url": "/memes/bow-down.webp",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 141,
+      "y": 389,
+      "width": 395,
+      "height": 171,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 29,
+      "y": 855,
+      "width": 159,
+      "height": 91,
+      "fontSize": 26,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Text 3",
+      "x": 464,
+      "y": 821,
+      "width": 159,
+      "height": 91,
+      "fontSize": 26,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_4",
+      "placeholder": "Text 4",
+      "x": 240,
+      "y": 797,
+      "width": 161,
+      "height": 71,
+      "fontSize": 22,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_5",
+      "placeholder": "Text 5",
+      "x": 350,
+      "y": 701,
+      "width": 161,
+      "height": 60,
+      "fontSize": 16,
+      "color": "#ffffff",
+      "align": "center"
+    }
+  ]
+}

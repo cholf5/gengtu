@@ -1,0 +1,38 @@
+{
+  "id": "Iceberg",
+  "name": "Iceberg",
+  "url": "/memes/iceberg.jpg",
+  "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.0896,
+    "width": 1,
+    "height": 0.4938
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 440,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 0,
+      "y": 817,
+      "width": 1280,
+      "height": 627,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false
+    }
+  ]
+}

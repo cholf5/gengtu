@@ -1,0 +1,27 @@
+{
+  "id": "Fan-Club-Support",
+  "name": "Fan Club Support",
+  "url": "/memes/fan-club-support.jpg",
+  "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.2135,
+    "width": 1,
+    "height": 0.7855
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 191,
+      "y": 149,
+      "width": 211,
+      "height": 139,
+      "fontSize": 60,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "effect": "none"
+    }
+  ]
+}

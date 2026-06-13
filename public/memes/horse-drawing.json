@@ -1,0 +1,38 @@
+{
+  "id": "Horse-Drawing",
+  "name": "Horse Drawing",
+  "url": "/memes/horse-drawing.jpg",
+  "tags": [],
+  "thumbnail": {
+    "x": 0.0489,
+    "y": 0,
+    "width": 0.9021,
+    "height": 1
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 0,
+      "y": 98,
+      "width": 342,
+      "height": 350,
+      "fontSize": 60,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 382,
+      "y": 100,
+      "width": 287,
+      "height": 350,
+      "fontSize": 60,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false
+    }
+  ]
+}

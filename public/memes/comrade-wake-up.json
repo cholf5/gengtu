@@ -1,0 +1,21 @@
+{
+  "id": "Comrade-Wake-Up",
+  "name": "Comrade Wake Up",
+  "url": "/memes/comrade-wake-up.png",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 695,
+      "y": 85,
+      "width": 769,
+      "height": 328,
+      "fontSize": 48,
+      "color": "#000000",
+      "align": "left",
+      "bold": false,
+      "effect": "none"
+    }
+  ]
+}

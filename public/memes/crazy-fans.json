@@ -1,0 +1,27 @@
+{
+  "id": "Crazy-Fans",
+  "name": "Crazy Fans",
+  "url": "/memes/crazy-fans.webp",
+  "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.2794,
+    "width": 1,
+    "height": 0.7196
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 86,
+      "y": 0,
+      "width": 298,
+      "height": 163,
+      "fontSize": 75,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "effect": "none"
+    }
+  ]
+}

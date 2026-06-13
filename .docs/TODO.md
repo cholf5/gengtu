@@ -1,6 +1,6 @@
 - [x] `/create` 实现
 - [x] 全站迁移 Antd
-- [ ] 列表页里的元素显示小一点
+- [x] 列表页里的元素显示小一点
 - [ ] 优化首屏体积， /create 和 AntD 的 lazy loading/code splitting
 - [ ] 夜间模式支持
 - [ ] 多语言支持
@@ -10,7 +10,7 @@
 - [x] src/memes 里的 json 配置文件迁移到 public/memes 里
 - [x] 考虑下是否增加一个后端来存储 meme 数据
 - [ ] 设计一个 logo
-- [ ] 添加常用 meme 模板
+- [x] 添加常用 meme 模板
 	- [x] Batman Slapping Robin
 	- [x] Bike Fall
 	- [x] Change My Mind
@@ -26,6 +26,7 @@
 - [x] 字体的 Effect 新增发光效果，类似 Outline 效果，但是会沿轮廓外发光
 - [x] 创建模板时，允许调整预览图的裁剪区域（现在是默认的中心裁剪），以适配一些特殊尺寸的图片
 - [x] 新增「编辑模板」功能，目前只有新增，假如想修改现有模板，是做不到的，因此想要一个编辑功能
+- [ ] URL 参数化
 
 # 性能优化
 - [x] 图片和 json 配置全部散落在 public/memes 里，考虑下未来数量多了以后是否有性能问题

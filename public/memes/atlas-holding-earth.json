@@ -1,0 +1,40 @@
+{
+  "id": "Atlas-Holding-Earth",
+  "name": "Atlas Holding Earth",
+  "url": "/memes/atlas-holding-earth.jpg",
+  "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.1801,
+    "width": 1,
+    "height": 0.6375
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 0,
+      "y": 0,
+      "width": 510,
+      "height": 144,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 0,
+      "y": 435,
+      "width": 510,
+      "height": 165,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    }
+  ]
+}
