@@ -190,7 +190,7 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               renderField={(field) => {
                 const style = resolveTextStyle(field);
                 return (
-                  <div className={`preview-text ${getVerticalAlignClass(style.verticalAlign)}`} style={getPreviewTextStyle(style, previewScale)}>
+                  <div className={`preview-text ${getVerticalAlignClass(style.verticalAlign)}`} style={getPreviewTextStyle(style, previewScale, imageSize.height)}>
                     {getPreviewText(field.text, style)}
                   </div>
                 );

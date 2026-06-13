@@ -1,5 +1,5 @@
 import type { EditableTextField, MemeTemplate, TextStyleOptions, TextStyleSettings, TextValues } from '../types';
-import { createEditableFields, DEFAULT_TEXT_STYLE, getCanvasFont, resolveTextStyle } from './textStyles';
+import { createEditableFields, DEFAULT_TEXT_STYLE, getCanvasFont, resolveSizeForImage, resolveTextStyle } from './textStyles';
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -77,12 +77,14 @@ export function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: 
   return lines;
 }
 
-function fitText(ctx: CanvasRenderingContext2D, text: string, field: EditableTextField, style: TextStyleSettings) {
-  let fontSize = Math.min(style.fontSize, style.maxFontSize);
+function fitText(ctx: CanvasRenderingContext2D, text: string, field: EditableTextField, style: TextStyleSettings, imageHeight: number) {
+  const pixelMax = resolveSizeForImage(Math.min(style.fontSize, style.maxFontSize), imageHeight);
+  const pixelMin = resolveSizeForImage(12, imageHeight);
+  let fontSize = pixelMax;
   let lines: string[] = [];
   let lineHeight = fontSize * 1.12;
 
-  while (fontSize >= 12) {
+  while (fontSize >= pixelMin) {
     ctx.font = getCanvasFont(style, fontSize);
     lineHeight = fontSize * 1.12;
     lines = wrapText(ctx, text, field.width);
@@ -111,10 +113,10 @@ function getStartY(field: EditableTextField, totalHeight: number, lineHeight: nu
   return -totalHeight / 2 + lineHeight / 2;
 }
 
-function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField) {
+function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField, imageHeight: number) {
   const style = resolveTextStyle(field);
   const text = style.uppercase ? field.text.toUpperCase() : field.text;
-  const { fontSize, lineHeight, lines } = fitText(ctx, text, field, style);
+  const { fontSize, lineHeight, lines } = fitText(ctx, text, field, style, imageHeight);
   const totalHeight = lines.length * lineHeight;
   const startY = getStartY(field, totalHeight, lineHeight, style.verticalAlign);
   // x is also relative to the field's center.
@@ -125,6 +127,8 @@ function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField) 
         ? field.width / 2
         : 0;
   const rotation = field.rotation ?? 0;
+  // Outline / shadow widths are stored on the REFERENCE_IMAGE_HEIGHT scale, same as fontSize.
+  const pixelOutlineWidth = resolveSizeForImage(style.outlineWidth, imageHeight);
 
   ctx.save();
   ctx.translate(field.x + field.width / 2, field.y + field.height / 2);
@@ -137,18 +141,18 @@ function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField) 
   ctx.textBaseline = 'middle';
   ctx.fillStyle = style.fontColor;
   ctx.strokeStyle = style.outlineColor;
-  ctx.lineWidth = Math.max(0, style.outlineWidth);
+  ctx.lineWidth = Math.max(0, pixelOutlineWidth);
   ctx.lineJoin = 'round';
 
   if (style.effect === 'shadow') {
     ctx.shadowColor = style.outlineColor;
-    ctx.shadowBlur = Math.max(4, style.outlineWidth * 2);
-    ctx.shadowOffsetX = Math.max(2, style.outlineWidth);
-    ctx.shadowOffsetY = Math.max(2, style.outlineWidth);
+    ctx.shadowBlur = Math.max(4, pixelOutlineWidth * 2);
+    ctx.shadowOffsetX = Math.max(2, pixelOutlineWidth);
+    ctx.shadowOffsetY = Math.max(2, pixelOutlineWidth);
   }
 
-  const glowBlur = Math.max(8, style.outlineWidth * 4);
-  const glowLineWidth = Math.max(1, style.outlineWidth);
+  const glowBlur = Math.max(8, pixelOutlineWidth * 4);
+  const glowLineWidth = Math.max(1, pixelOutlineWidth);
 
   lines.forEach((line, index) => {
     const y = startY + index * lineHeight;
@@ -197,7 +201,7 @@ export async function renderEditableMemeToCanvas(
   fields
     .slice()
     .sort((a, b) => a.zIndex - b.zIndex)
-    .forEach((field) => drawTextField(ctx, field));
+    .forEach((field) => drawTextField(ctx, field, canvas.height));
 
   return canvas;
 }

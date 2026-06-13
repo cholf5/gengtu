@@ -17,7 +17,7 @@
       "y": 84,
       "width": 210,
       "height": 110,
-      "fontSize": 42,
+      "fontSize": 33,
       "color": "#000000",
       "align": "center",
       "bold": false,
@@ -31,7 +31,7 @@
       "y": 750,
       "width": 552,
       "height": 115,
-      "fontSize": 42,
+      "fontSize": 33,
       "color": "#ffffff",
       "align": "center",
       "effect": "glow"
@@ -43,7 +43,7 @@
       "y": 47,
       "width": 178,
       "height": 92,
-      "fontSize": 42,
+      "fontSize": 33,
       "color": "#000000",
       "align": "center",
       "bold": false,
@@ -52,4 +52,3 @@
     }
   ]
 }
-

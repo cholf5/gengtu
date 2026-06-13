@@ -17,7 +17,7 @@
       "y": 367,
       "width": 219,
       "height": 102,
-      "fontSize": 36,
+      "fontSize": 25,
       "color": "#ffffff",
       "align": "center"
     },
@@ -28,7 +28,7 @@
       "y": 263,
       "width": 174,
       "height": 75,
-      "fontSize": 36,
+      "fontSize": 25,
       "color": "#ffffff",
       "align": "center"
     },
@@ -39,7 +39,7 @@
       "y": 522,
       "width": 232,
       "height": 85,
-      "fontSize": 36,
+      "fontSize": 25,
       "color": "#ffffff",
       "align": "center"
     },
@@ -50,7 +50,7 @@
       "y": 780,
       "width": 318,
       "height": 155,
-      "fontSize": 36,
+      "fontSize": 25,
       "color": "#ffffff",
       "align": "center"
     }

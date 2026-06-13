@@ -11,7 +11,7 @@
       "y": 536,
       "width": 331,
       "height": 130,
-      "fontSize": 36,
+      "fontSize": 32,
       "color": "#ffffff",
       "align": "center"
     },
@@ -22,7 +22,7 @@
       "y": 334,
       "width": 295,
       "height": 141,
-      "fontSize": 36,
+      "fontSize": 32,
       "color": "#ffffff",
       "align": "center"
     },
@@ -33,7 +33,7 @@
       "y": 471,
       "width": 271,
       "height": 143,
-      "fontSize": 36,
+      "fontSize": 32,
       "color": "#ffffff",
       "align": "center"
     }

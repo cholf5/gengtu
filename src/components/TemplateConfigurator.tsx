@@ -523,7 +523,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
                   return (
                     <div
                       className={`preview-text ${getVerticalAlignClass(style.verticalAlign)}`}
-                      style={getPreviewTextStyle(style, previewScale)}
+                      style={getPreviewTextStyle(style, previewScale, imageSize.height)}
                     >
                       {getPreviewText(field.placeholder, style)}
                     </div>

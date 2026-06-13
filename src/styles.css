@@ -156,8 +156,11 @@ body {
 
 .meme-preview {
   position: relative;
-  width: fit-content;
-  max-width: 100%;
+  /* Always fill the editor column so small source images get enlarged for a
+     comfortable editing experience (matches imgflip's behavior). At default
+     viewport widths the column is ≈770px, well above the 720px reference
+     used by font-size scaling in src/utils/textStyles.ts. */
+  width: 100%;
   margin: 0 auto;
   overflow: hidden;
   border-radius: 18px;
@@ -166,7 +169,7 @@ body {
 
 .meme-preview img {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
   user-select: none;
 }

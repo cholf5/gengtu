@@ -17,12 +17,12 @@
       "y": 0,
       "width": 1546,
       "height": 382,
-      "fontSize": 100,
+      "fontSize": 30,
       "color": "#ffffff",
       "align": "center",
       "bold": false,
       "effect": "glow",
-      "maxFontSize": 100
+      "maxFontSize": 30
     },
     {
       "id": "text_2",
@@ -31,12 +31,12 @@
       "y": 1997,
       "width": 1546,
       "height": 382,
-      "fontSize": 100,
+      "fontSize": 30,
       "color": "#ffffff",
       "align": "center",
       "bold": false,
       "effect": "glow",
-      "maxFontSize": 100
+      "maxFontSize": 30
     }
   ]
 }
