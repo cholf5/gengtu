@@ -1,12 +1,12 @@
 {
-  "name": "open-meme",
+  "name": "gengtu",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:pages": "tsc -b && vite build --base=/open-meme/",
+    "build:pages": "tsc -b && vite build --base=/gengtu/",
     "preview": "vite preview",
     "test": "vitest run"
   },

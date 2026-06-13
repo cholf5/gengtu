@@ -97,9 +97,9 @@ function App() {
       <Layout className="app-layout">
         <Layout.Header className="app-header">
           <button className="app-brand" type="button" onClick={goHome}>
-            <Typography.Text className="app-brand-eyebrow">OPEN MEME</Typography.Text>
+            <Typography.Text className="app-brand-eyebrow">梗图铺</Typography.Text>
             <Typography.Title level={4} className="app-brand-title">
-              开源 · 纯前端的 Meme 生成器
+              精选模板，一键成梗
             </Typography.Title>
           </button>
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>

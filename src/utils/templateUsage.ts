@@ -11,8 +11,8 @@ export interface TemplateUsage {
 
 export type TemplateUsageMap = Record<string, TemplateUsage>;
 
-const USAGE_KEY = 'open-meme:template-usage';
-const SORT_KEY = 'open-meme:gallery-sort';
+const USAGE_KEY = 'gengtu:template-usage';
+const SORT_KEY = 'gengtu:gallery-sort';
 
 const SORT_MODES: readonly SortMode[] = ['alphabetical', 'frequency'];
 

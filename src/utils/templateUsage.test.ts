@@ -58,7 +58,7 @@ describe('templateUsage', () => {
   });
 
   it('falls back to alphabetical for an unknown stored mode', () => {
-    window.localStorage.setItem('open-meme:gallery-sort', JSON.stringify('lol'));
+    window.localStorage.setItem('gengtu:gallery-sort', JSON.stringify('lol'));
     expect(getSortMode()).toBe('alphabetical');
   });
 
@@ -70,7 +70,7 @@ describe('templateUsage', () => {
   });
 
   it('ignores corrupted usage payloads', () => {
-    window.localStorage.setItem('open-meme:template-usage', '{"alpha": "nope"}');
+    window.localStorage.setItem('gengtu:template-usage', '{"alpha": "nope"}');
     expect(getTemplateUsage()).toEqual({});
   });
 

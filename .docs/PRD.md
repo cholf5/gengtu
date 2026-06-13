@@ -1,146 +1,109 @@
-# Product Requirement Document (PRD) - Open Source Meme Generator (Serverless)
+# 梗图铺 PRD
 
-## 1. Project Overview & Architecture
-
-This is an open-source, fully client-side Meme Generator. It requires **no backend server, no database, and no API keys**. The entire application will be hosted as a static site (e.g., GitHub Pages, Vercel).
-
-* **Core Principle**: Keep It Simple, Stupid (KISS).
-* **Data Flow**: Driven entirely by localized JSON configuration files and images.
-* **Contribution Model**: Users contribute new templates via a built-in Visual Template Editor, which generates a pre-filled GitHub URL to open a Pull Request (PR) directly on GitHub.
+> **文档地位**：本文档定调产品方向与边界（"做什么 / 不做什么 / 为什么"）。代码组织、架构细节、最新功能清单见 `CLAUDE.md` 与 `README.md`，那两份是活文档，本 PRD 写完后只在产品方向变化时更新。
+>
+> **历史**：本文档于 2026-06-13 重写，前身是 `Open Source Meme Generator (Serverless)` PRD（开源、用户通过 PR 贡献模板）；项目转私有 + 收紧策展定位后已作废，重写为现状版本。重写决策见 `.docs/plans/2026-06-13-rebrand-design.md`。
 
 ---
 
-## 2. Core Workflows
+## 1. 产品定位
 
-### Workflow A: Meme Generation (User View)
+**一句话**：中文梗图铺——店主精挑的中文模板库，一键成梗。
 
-1. User browses or searches built-in meme templates.
-2. User selects a template $\rightarrow$ UI renders the image with overlayed input text fields.
-3. User types text, adjusts styling (font size, color, font-family, uppercase toggle).
-4. User clicks "Generate" $\rightarrow$ Application renders the final image on a HTML5 Canvas and triggers a browser download.
+| 项 | 内容 |
+|---|---|
+| 品牌名 | 梗图铺 |
+| 域名 | `gengtu.app` |
+| 主 Slogan | 中文梗图铺 |
+| 副 Slogan | 精选模板，一键成梗 |
 
-### Workflow B: Template Contribution (Creator View)
-
-1. User enters `/create` or `/admin` route.
-2. User uploads a local base image (handled via client-side `URL.createObjectURL`).
-3. User interactively drags/resizes text boundary boxes on top of the image to define where meme text should go.
-4. User clicks "Submit Template" $\rightarrow$ System generates a standardized JSON payload and opens a new browser tab with a pre-formatted GitHub `new file` URL, facilitating an instant PR.
+**战略前提**：英文世界已有 imgflip 占据生态位，正面竞争性价比低；中文世界尚无对标产品。本项目专注中文用户，不进入英文市场。
 
 ---
 
-## 3. Detailed Feature Requirements
+## 2. 核心取舍
 
-### Feature 1: Home & Gallery View
+产品边界由"刻意不做的事"定义。每条决策附理由，遇到反向建议时回到这里。
 
-* **Grid Layout**: Display available meme templates using cards (Image + Title).
-* **Search / Filter**: Client-side fuzzy search by template name or tags.
-* **Responsive Design**: Mobile-friendly grid system (1 column on mobile, 3–4 columns on desktop).
+### 做
 
-### Feature 2: Meme Workspace (Editor)
+- **策展** —— 模板由作者一人手挑、手配，质量优先于数量。
+- **好用** —— 编辑/导出路径短、所见即所得、无需注册即可使用。
+- **纯前端** —— 静态站点部署，无后端、无数据库、无 API Key。**这是实现选择，不是宣传卖点**——用户不关心实现，关心好不好用。
+- **单作者维护** —— 仓库私有，只有作者能加模板。
 
-* **Canvas / Preview Area**: Displays the active meme template. Text should overlay on top of the image dynamically as the user types.
-* **Form Controls**:
-* Dynamic list of input fields mapping to the template's designated text fields.
-* **Global/Per-field Text Options**: Font Size slider ($20\text{px} - 100\text{px}$), Color Picker, Font-Family selector (include classic meme fonts like *Impact*, *Arial*, and a heavy Sans-Serif font).
-* **Uppercase Switch**: A toggle button. If enabled, automatically transform English inputs via `.toUpperCase()` before rendering.
+### 刻意不做
 
-
-* **Download Button**: Re-draws the image + text onto an offscreen HTML5 Canvas at full original resolution, then triggers a client-side `.png` or `.jpg` download.
-
-### Feature 3: Visual Template Configurator (The `/create` Tool)
-
-* **Local Image Uploader**: Drag-and-drop zone to load any image file strictly into browser memory.
-* **Visual Drag & Drop Layer**:
-* Integrate a library like `react-rnd` or native draggable handlers.
-* Allow users to add a text field bounding box.
-* Users can move (adjust $X, Y$ percentages or absolute values) and resize (adjust $Width, Height$) the box.
-* Set default styles for that specific field (e.g., Default Text, Default Font Size, Text Alignment).
-
-
-* **JSON Generator**: Automatically updates a live-preview JSON schema string matching the format defined in Section 4.
-
-### Feature 4: Path A "One-Click PR" Generator
-
-* **Action**: Clicking "Submit to GitHub" executes a clean URL redirection.
-* **Logic**:
-1. Serialize the generated JSON config into a string.
-2. URL-encode the payload (`encodeURIComponent`).
-3. Format a GitHub URL targeting the project repo using the file creation endpoint.
-
-
-* **URL Spec**:
-
-```text
-https://github.com/cholf5/open-meme/new/main/src/memes/?filename=<TEMPLATE_ID>.json&value=<URL_ENCODED_JSON_STRING>
-```
-
-* **UI Notice**: Display a friendly modal explaining to the user: *"You will be redirected to GitHub to commit this configuration. Please drag and drop your meme image file into the same directory on GitHub before finalizing your Pull Request!"*
+- **用户上传模板** —— 一旦开放上传，"精选"立刻崩塌；策展是核心差异点，不能让步。旧 PRD 设计的"通过 GitHub PR 上传"流程随仓库私有化作废，不复活。
+- **后端 / 账号 / 数据库** —— 没有需要持久化到服务端的状态。用户偏好（最近用过、排序模式）走 `localStorage` 即可。账号系统增加注册摩擦，与"无需注册即可用"冲突。
+- **多语言界面** —— 产品定位明确是中文世界。英文用户已有 imgflip，不抢。
+- **移动端原生 App** —— 网页响应式已覆盖移动浏览器，原生壳投入产出比低。
+- **收费 / 订阅** —— 当前阶段。维护成本由作者承担。
 
 ---
 
-## 4. Technical Specifications & Data Models
+## 3. 目标用户与场景
 
-### Template JSON Schema
-Every meme template must follow this structure inside `src/memes/`:
+**用户**：中文互联网泛用户——任何喜欢看梗图、做梗图、发梗图的人。社群运营、自媒体作者、群聊王者，乃至单纯想发个梗的网友，都是目标用户。不做用户分层。
 
-```json
-{
-  "id": "two-buttons",
-  "name": "Two Buttons (抉择两难)",
-  "url": "/memes/two_buttons.jpg",
-  "tags": ["classic", "choice"],
-  "textFields": [
-    {
-      "id": "text_left",
-      "placeholder": "Option A",
-      "x": 80,
-      "y": 320,
-      "width": 120,
-      "height": 60,
-      "fontSize": 24,
-      "color": "#000000",
-      "align": "center"
-    },
-    {
-      "id": "text_right",
-      "placeholder": "Option B",
-      "x": 220,
-      "y": 320,
-      "width": 120,
-      "height": 60,
-      "fontSize": 24,
-      "color": "#000000",
-      "align": "center"
-    }
-  ]
-}
+**单一核心场景**：
 
-```
+> 找模板 → 改文字（可能微调样式/位置）→ 下载或复制 → 发出去。
 
-### Canvas Rendering Constraints
-
-* Text rendering **must support multi-line wrap** bounded by the `width` and `height` parameters specified in the JSON.
-* Text strokes/outlines: Standard memes use white text with a thick black outline. Add text-shadow or canvas stroke options:
-
-```javascript
-ctx.strokeStyle = '#000000';
-ctx.lineWidth = 4;
-ctx.fillStyle = '#ffffff';
-```
+整个产品 UI、导航、性能优化都围绕这条路径压缩到最短。
 
 ---
 
-## 5. Non-Functional Requirements (Agent Guardrails)
-* **Zero Server Dependency**: Do not attempt to install or use packages like `express`, `mongoose`, `prisma`, or any external file-upload microservices.
-* **Bundle Optimization**: Lazy-load built-in meme templates or web fonts to keep initial load times minimal.
-* **Component Framework**: Use clean React components with standard CSS/Tailwind. Do not over-engineer the states. Follow the **KISS** architecture pattern.
+## 4. 已实现能力
 
+事实清单（不是愿望清单）。最新功能以代码为准，本节不追求穷尽。
 
-## 6. CI/CD & Automated Workflows
-* **Deployment**: Configure a GitHub Action (`.github/workflows/deploy.yml`) to automatically build and deploy the React/Vite app to **GitHub Pages** whenever code is merged into the `main` branch.
-* **Template Validation**: Add a pre-commit hook or a lightweight GitHub Action to validate any new JSON file submitted to `src/memes/`. It must strictly conform to the JSON Schema provided in Section 4 (ensuring required fields like `id`, `url`, and `textFields` are present and valid) to prevent broken PRs from crashing the gallery.
+- **画廊** —— 模板卡片网格、关键字搜索（名称 / id / 标签）、字母序与使用频率两种排序，偏好持久化到 `localStorage`。
+- **编辑器** —— 文本框拖动 / 缩放 / 旋转 / 复制；样式 inspector（字号、颜色、对齐、加粗、斜体、ALL CAPS、透明度、自动适配字号）；Outline / Shadow / Glow 三种文字效果。
+- **导出** —— Canvas 渲染 PNG 下载；支持的浏览器中可直接复制图片到剪贴板。
+- **`/create` 模板配置器** —— 上传图片可视化拖框定义文本字段；支持自定义画廊缩略图裁剪；导出 JSON 下载；导入现有模板 JSON 进行编辑。
+- **未导出提示** —— 编辑过未导出时刷新/关闭页面会触发浏览器原生提醒。
 
+---
 
-## 7. Asset Management
-* All built-in meme background images must be placed in `public/memes/`.
-* Images should be optimized/compressed (e.g., standard `.jpg` or `.webp`, resolution width bounded within $800\text{px} - 1200\text{px}$) to maintain blazing-fast, serverless page loads.
+## 5. 模板数据模型
+
+模板由一对同名文件构成，置于 `public/memes/`：
+
+- `<id>.<ext>`：图片（PNG / JPG / SVG / WebP）
+- `<id>.json`：模板配置
+
+构建期 `vite-plugin-meme-manifest` 扫描所有 JSON，合并写入 `public/memes/index.json`（gitignored），运行时由 `loadMemeTemplates()` 一次性加载。
+
+JSON 模板结构与文本字段两种运行时形态（`MemeTextField` / `EditableTextField`）的细节见 `CLAUDE.md` 的 Architecture 节。
+
+---
+
+## 6. 维护流程
+
+**加模板**（仅作者）：
+
+1. 在 `/create` 配置好或修改图片与文本字段。
+2. 下载 JSON，与图片一起放入 `public/memes/`。
+3. `git commit`。
+
+不通过 PR、不通过 web 上传、不通过任何其他渠道。仓库私有，无外部贡献入口。
+
+---
+
+## 7. 路线图
+
+待办与"先不做"清单见 `.docs/TODO.md`。本 PRD 不重复维护一份。
+
+---
+
+## 8. Guardrails（给未来的 agent / 维护者）
+
+涉及以下方向时，回到本文档第 2 节核对，不要主动建议：
+
+- **加后端 / 账号 / 数据库 / API 服务** —— 与"纯前端 + 无注册"冲突，且没有任何当前需求需要服务端状态。
+- **开放用户上传模板** —— 与"策展"核心差异点冲突。
+- **复活"通过 GitHub PR 贡献模板"** —— 仓库已私有，外部 PR 路径不存在。
+- **把 `MemeEditor` 的预览/拖拽逻辑复制到 `TemplateConfigurator`** —— 已抽到 `useImagePreviewScale` + `TextFieldsPreview` + `geometry.ts` 共享，禁止重复实现。
+- **把模板从 `public/memes/` 搬到 CDN 或拆分异步加载** —— 已通过 manifest 内联优化，运行时只一次 fetch；当前规模下进一步拆分是过度设计。
+- **加 ESLint / Prettier / Husky 等额外工具链** —— 类型检查由 `tsc -b`（在 `npm run build` 中）兜底，无需补 lint 任务。

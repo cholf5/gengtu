@@ -150,12 +150,12 @@ describe('buildImportedDraft', () => {
 
 describe('resolveTemplateImageUrl', () => {
   it('prefixes absolute paths with the supplied baseUrl', () => {
-    expect(resolveTemplateImageUrl('/memes/foo.jpg', '/open-meme/')).toBe('/open-meme/memes/foo.jpg');
+    expect(resolveTemplateImageUrl('/memes/foo.jpg', '/gengtu/')).toBe('/gengtu/memes/foo.jpg');
     expect(resolveTemplateImageUrl('/memes/foo.jpg', '/')).toBe('/memes/foo.jpg');
   });
 
   it('leaves non-absolute urls untouched', () => {
-    expect(resolveTemplateImageUrl('https://cdn.example.com/foo.jpg', '/open-meme/')).toBe(
+    expect(resolveTemplateImageUrl('https://cdn.example.com/foo.jpg', '/gengtu/')).toBe(
       'https://cdn.example.com/foo.jpg',
     );
     expect(resolveTemplateImageUrl('blob:https://x/abc', '/')).toBe('blob:https://x/abc');
