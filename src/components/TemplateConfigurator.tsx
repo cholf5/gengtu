@@ -1,10 +1,17 @@
 import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, InboxOutlined, PlusOutlined } from '@ant-design/icons';
 import { Alert, Button, Card, Form, Input, Space, Switch, Typography, Upload, message } from 'antd';
 import type { UploadProps } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EditableTextField, MemeThumbnailCrop, TextStyleSettings } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
-import { clampBoxToImage, clampCropTo43, cropToNormalized, maxCenteredCropTo43, type Rect } from '../utils/geometry';
+import {
+  clampBoxToImage,
+  clampCropTo43,
+  cropToNormalized,
+  maxCenteredCropTo43,
+  normalizedToCrop,
+  type Rect,
+} from '../utils/geometry';
 import {
   buildTemplateJson,
   createConfiguratorTextField,
@@ -15,6 +22,7 @@ import {
   getNextTextFieldIndex,
   stringifyTemplateJson,
 } from '../utils/templateConfigurator';
+import { buildImportedDraft, parseTemplateJson, resolveTemplateImageUrl } from '../utils/templateImport';
 import { DEFAULT_TEXT_STYLE, getPreviewText, getPreviewTextStyle, getVerticalAlignClass, resolveTextStyle } from '../utils/textStyles';
 import { TemplateFieldInspector } from './TemplateFieldInspector';
 import { TextFieldsPreview } from './TextFieldsPreview';
@@ -49,8 +57,20 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
   // Off by default — the dimmed shading helps preview the gallery card but
   // gets in the way when adding text boxes outside the crop.
   const [cropShading, setCropShading] = useState(false);
+  // Set when the user imports an existing template JSON. Two pieces of state:
+  //   - importedHint: shown in the subtitle so the user knows they're editing.
+  //   - pendingThumbnail: a normalized 0..1 crop deferred until imageSize is
+  //     known; the effect below converts it to natural pixels via normalizedToCrop.
+  // missingImageUrl carries the original `template.url` when the auto-fetch
+  // fails, so we can prompt the user to upload the image manually.
+  const [importedHint, setImportedHint] = useState<string | null>(null);
+  const [pendingThumbnail, setPendingThumbnail] = useState<MemeThumbnailCrop | null>(null);
+  const [missingImageUrl, setMissingImageUrl] = useState<string | null>(null);
   const { imageRef, imageSize, previewScale, updatePreviewScale } = useImagePreviewScale(imageUrl);
   const [api, contextHolder] = message.useMessage();
+  // Tracks blob: URLs we created so we revoke them on replace / unmount,
+  // without revoking external URLs (when fetch fallback isn't used).
+  const blobUrlRef = useRef<string | null>(null);
 
   const selectedField = fields.find((field) => field.id === selectedFieldId) ?? null;
   const selectedEffectiveStyle = selectedField ? resolveTextStyle(selectedField) : DEFAULT_TEXT_STYLE;
@@ -79,13 +99,153 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
 
   useEffect(() => {
     return () => {
-      if (imageUrl) {
-        URL.revokeObjectURL(imageUrl);
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
       }
     };
-  }, [imageUrl]);
+  }, []);
 
-  const uploadProps: UploadProps = {
+  /**
+   * Replace the preview image, revoking the previous blob URL when one was
+   * created via createObjectURL. Pass `null` to clear the preview.
+   */
+  const setPreviewImage = (nextUrl: string | null, opts: { isBlob: boolean }) => {
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+    if (nextUrl && opts.isBlob) {
+      blobUrlRef.current = nextUrl;
+    }
+    setImageUrl(nextUrl ?? '');
+  };
+
+  /** Fetch the image referenced by `templateUrl` and turn it into a blob: URL. */
+  const fetchTemplateImage = async (templateUrl: string): Promise<string | null> => {
+    const resolved = resolveTemplateImageUrl(templateUrl, import.meta.env.BASE_URL);
+    try {
+      const res = await fetch(resolved);
+      if (!res.ok) {
+        return null;
+      }
+      const blob = await res.blob();
+      return URL.createObjectURL(blob);
+    } catch {
+      return null;
+    }
+  };
+
+  const importTemplateFromText = async (text: string, sourceLabel: string) => {
+    let result;
+    try {
+      const template = parseTemplateJson(text);
+      result = { template, draft: buildImportedDraft(template) };
+    } catch (err) {
+      api.error(err instanceof Error ? err.message : '导入失败。');
+      return;
+    }
+
+    const { template, draft: importedDraft } = result;
+
+    setDraft(importedDraft.draft);
+    setFields(importedDraft.fields);
+    setSelectedFieldId(importedDraft.fields[0]?.id ?? '');
+    setCropEnabled(false);
+    setCropRect(null);
+    setCropShading(false);
+    setPendingThumbnail(importedDraft.pendingThumbnail);
+    setImportedHint(`Editing existing template: ${sourceLabel}`);
+
+    const blobUrl = await fetchTemplateImage(template.url);
+    if (blobUrl) {
+      setMissingImageUrl(null);
+      setPreviewImage(blobUrl, { isBlob: true });
+      api.success(`Imported ${sourceLabel}`);
+    } else {
+      setPreviewImage(null, { isBlob: false });
+      setMissingImageUrl(template.url);
+      api.warning(`已导入 ${sourceLabel}，但无法加载图片，请手动上传。`);
+    }
+  };
+
+  /**
+   * Drop a fresh image and reset everything else. The "new template" path —
+   * triggered when the user drops an image into the empty Dragger and there's
+   * no `missingImageUrl` carried over from a failed import.
+   */
+  const handleImageFile = (file: File) => {
+    setPreviewImage(URL.createObjectURL(file), { isBlob: true });
+    setFields([]);
+    setSelectedFieldId('');
+    setCropEnabled(false);
+    setCropRect(null);
+    setCropShading(false);
+    setImportedHint(null);
+    setPendingThumbnail(null);
+    setMissingImageUrl(null);
+
+    const fromFile = deriveTemplateDraftFromFilename(file.name);
+    const ext = extractFileExtension(file.name);
+    setDraft((current) => ({
+      ...current,
+      name: fromFile.name || current.name,
+      imageExt: ext,
+    }));
+  };
+
+  /**
+   * Supply the missing image after an import auto-fetch failed. Unlike
+   * `handleImageFile`, this preserves the imported fields / draft / pending
+   * thumbnail so the user resumes editing where they left off.
+   */
+  const supplyMissingImage = (file: File) => {
+    setPreviewImage(URL.createObjectURL(file), { isBlob: true });
+    setMissingImageUrl(null);
+    const ext = extractFileExtension(file.name);
+    setDraft((current) => ({ ...current, imageExt: ext }));
+  };
+
+  const isJsonFile = (file: File) =>
+    file.type === 'application/json' || file.name.toLowerCase().endsWith('.json');
+
+  /**
+   * Used by the initial Dragger only. Accepts both an image (→ new template)
+   * and a JSON file (→ edit-existing flow). The "Replace image" upload further
+   * down restricts itself to images so a stray .json drop in mid-edit doesn't
+   * blow away the user's work.
+   */
+  const initialUploadProps: UploadProps = {
+    accept: 'image/*,application/json,.json',
+    maxCount: 1,
+    showUploadList: false,
+    beforeUpload: (file) => {
+      if (isJsonFile(file)) {
+        file
+          .text()
+          .then((text) => importTemplateFromText(text, file.name))
+          .catch(() => api.error('读取 JSON 文件失败。'));
+        return false;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        api.error('请选择图片文件或模板 JSON。');
+        return Upload.LIST_IGNORE;
+      }
+
+      // Coming back to the empty state from a failed import? Treat the new
+      // image as "supply the missing image", preserving fields/draft/crop.
+      if (missingImageUrl) {
+        supplyMissingImage(file);
+      } else {
+        handleImageFile(file);
+      }
+      return false;
+    },
+  };
+
+  /** Replace-image button while editing — image only, never JSON. */
+  const replaceImageUploadProps: UploadProps = {
     accept: 'image/*',
     maxCount: 1,
     showUploadList: false,
@@ -95,27 +255,16 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
         return Upload.LIST_IGNORE;
       }
 
-      setImageUrl((current) => {
-        if (current) {
-          URL.revokeObjectURL(current);
-        }
-        return URL.createObjectURL(file);
-      });
-      setFields([]);
-      setSelectedFieldId('');
-      setCropEnabled(false);
-      setCropRect(null);
-      setCropShading(false);
+      // Replacing the image keeps the user's current text boxes / crop / draft
+      // intact — only the picture changes. We *do* clear missingImageUrl since
+      // the user just supplied the image manually.
+      setPreviewImage(URL.createObjectURL(file), { isBlob: true });
+      setMissingImageUrl(null);
 
-      const fromFile = deriveTemplateDraftFromFilename(file.name);
       const ext = extractFileExtension(file.name);
-      setDraft((current) => ({
-        ...current,
-        name: fromFile.name || current.name,
-        imageExt: ext,
-      }));
+      setDraft((current) => ({ ...current, imageExt: ext }));
 
-      api.info('Image changed, text boxes reset.');
+      api.info('Image replaced.');
       return false;
     },
   };
@@ -192,6 +341,31 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
       return clampCropTo43(current, imageSize);
     });
   }, [imageSize, cropEnabled]);
+
+  /**
+   * Called when the preview <img> finishes loading. Beyond the usual scale
+   * refresh, this is also where we apply a deferred `pendingThumbnail` from
+   * the import flow — only here is `imageRef.current.natural{Width,Height}`
+   * guaranteed to reflect the new image (vs. `imageSize` state which lags by
+   * one render and starts from a non-zero default).
+   */
+  const handleImageLoad = () => {
+    updatePreviewScale();
+
+    if (!pendingThumbnail || !imageRef.current) {
+      return;
+    }
+    const naturalWidth = imageRef.current.naturalWidth;
+    const naturalHeight = imageRef.current.naturalHeight;
+    if (!naturalWidth || !naturalHeight) {
+      return;
+    }
+    const size = { width: naturalWidth, height: naturalHeight };
+    const rect = clampCropTo43(normalizedToCrop(pendingThumbnail, size), size);
+    setCropRect(rect);
+    setCropEnabled(true);
+    setPendingThumbnail(null);
+  };
 
   const removeSelectedField = () => {
     if (!selectedField) {
@@ -277,7 +451,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
             Create template
           </Typography.Title>
           <Typography.Paragraph type="secondary" style={{ margin: '4px 0 0' }}>
-            上传本地图片预览，标注文本区域，并复制生成的 JSON。
+            {importedHint ?? '上传本地图片预览或导入现有模板 JSON，编辑后下载新的 JSON。'}
           </Typography.Paragraph>
         </div>
       </div>
@@ -285,17 +459,35 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
       <div className="editor-grid configurator-grid">
         <Card className="preview-panel">
           {!imageUrl ? (
-            <Upload.Dragger {...uploadProps}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">Click or drag image to this area</p>
-              <p className="ant-upload-hint">图片只在浏览器内存中用于预览，不会上传。</p>
-            </Upload.Dragger>
+            <Space direction="vertical" size="middle" className="full-width-stack">
+              {missingImageUrl && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="找不到模板图片"
+                  description={`无法加载 ${missingImageUrl}，请上传同一张图片继续编辑。文本框和裁剪框已保留。`}
+                />
+              )}
+              <Upload.Dragger {...initialUploadProps}>
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">
+                  {missingImageUrl
+                    ? 'Upload the matching image to continue'
+                    : 'Click or drag image or template JSON to this area'}
+                </p>
+                <p className="ant-upload-hint">
+                  {missingImageUrl
+                    ? '只接受图片；文本框和裁剪框已保留。'
+                    : '图片只在浏览器内存中用于预览，不会上传。导入 JSON 时会自动加载站点内同名图片。'}
+                </p>
+              </Upload.Dragger>
+            </Space>
           ) : (
             <Space direction="vertical" size="middle" className="full-width-stack">
               <div className="preview-actions">
-                <Upload {...uploadProps}>
+                <Upload {...replaceImageUploadProps}>
                   <Button>Replace image</Button>
                 </Upload>
                 <Button type="primary" icon={<PlusOutlined />} onClick={addTextField} disabled={!imageUrl}>
@@ -323,7 +515,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
                     />
                   ) : null
                 }
-                onImageLoad={updatePreviewScale}
+                onImageLoad={handleImageLoad}
                 onSelectField={setSelectedFieldId}
                 onFieldRectChange={(fieldId, rect) => updateField(fieldId, rect)}
                 renderField={(field) => {

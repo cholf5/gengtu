@@ -1,12 +1,6 @@
 import type { MemeTemplate, MemeThumbnailCrop } from '../types';
-
-function resolveTemplateUrl(url: string) {
-  if (!url.startsWith('/')) {
-    return url;
-  }
-
-  return `${import.meta.env.BASE_URL}${url.slice(1)}`;
-}
+import { isMemeTemplate } from '../utils/memeTemplate';
+import { resolveTemplateImageUrl } from '../utils/templateImport';
 
 const THUMBNAIL_RATIO_TOLERANCE = 0.005;
 
@@ -42,37 +36,6 @@ function validateThumbnail(value: unknown, label: string): MemeThumbnailCrop | n
     return null;
   }
   return { x, y, width, height };
-}
-
-function isMemeTemplate(value: unknown): value is MemeTemplate {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-
-  const template = value as Partial<MemeTemplate>;
-
-  return (
-    typeof template.id === 'string' &&
-    typeof template.name === 'string' &&
-    typeof template.url === 'string' &&
-    Array.isArray(template.tags) &&
-    Array.isArray(template.textFields) &&
-    template.textFields.every((field) => {
-      return (
-        field &&
-        typeof field.id === 'string' &&
-        typeof field.placeholder === 'string' &&
-        typeof field.x === 'number' &&
-        typeof field.y === 'number' &&
-        typeof field.width === 'number' &&
-        typeof field.height === 'number' &&
-        typeof field.fontSize === 'number' &&
-        typeof field.color === 'string' &&
-        ['left', 'center', 'right'].includes(field.align) &&
-        (field.rotation === undefined || typeof field.rotation === 'number')
-      );
-    })
-  );
 }
 
 /**
@@ -127,7 +90,7 @@ export async function loadMemeTemplates(): Promise<MemeTemplate[]> {
       const thumbnail = validateThumbnail((entry as { thumbnail?: unknown }).thumbnail, entry.id);
       const { thumbnail: _stripped, ...rest } = entry as MemeTemplate & { thumbnail?: unknown };
       void _stripped;
-      const next: MemeTemplate = { ...rest, url: resolveTemplateUrl(entry.url) };
+      const next: MemeTemplate = { ...rest, url: resolveTemplateImageUrl(entry.url, import.meta.env.BASE_URL) };
       if (thumbnail) {
         next.thumbnail = thumbnail;
       }
