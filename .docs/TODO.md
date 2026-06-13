@@ -7,7 +7,8 @@
 - [x] `/create` 上传后根据文件名自动填充表单
 - [ ] 完成该功能: MVP only generates JSON. Put the image file under public/memes separately.
 - [ ] 添加 Google Analytics
-- [ ] src/memes 里的 json 配置文件迁移到 public/memes 里
+- [x] src/memes 里的 json 配置文件迁移到 public/memes 里
 - [x] 考虑下是否增加一个后端来存储 meme 数据
 - [ ] 设计一个 logo
 - [ ] 添加常用 meme 模板
+- [ ] 图片和 json 配置全部散落在 public/memes 里，考虑下未来数量多了以后是否有性能问题

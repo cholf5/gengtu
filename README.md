@@ -28,13 +28,13 @@ npm run build
 
 ## 添加模板（仅作者）
 
-模板由作者本人维护：
+模板由作者本人维护，图片和 JSON 都放在 `public/memes/`：
 
-1. 将模板图片放入 `public/memes/`。
-2. 在 `src/memes/` 中添加一个 `.json` 文件（推荐用站内 `/create` 页面可视化生成后下载）。
+1. 把图片放入 `public/memes/`（如 `doge.jpg`）。
+2. 在同目录添加一个同名 `.json`（推荐用站内 `/create` 页面可视化生成后下载）。
 3. JSON 结构应包含 `id`、`name`、`url`、`tags` 和 `textFields`。
 
-`src/memes/index.ts` 通过 `import.meta.glob` 自动注册，无需改注册表。
+`vite-plugin-meme-manifest` 会在 dev / build 时扫描 `public/memes/*.json` 自动生成 `public/memes/index.json` 清单；运行时由 `src/memes/index.ts` 的 `loadMemeTemplates()` 取回，无需手动注册。
 
 示例：
 

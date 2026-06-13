@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { Gallery } from './components/Gallery';
 import { MemeEditor } from './components/MemeEditor';
 import { TemplateConfigurator } from './components/TemplateConfigurator';
-import { memeTemplates } from './memes';
+import { loadMemeTemplates } from './memes';
 import type { MemeTemplate } from './types';
 
 function getInitialView() {
@@ -15,6 +15,7 @@ function App() {
   const [view, setView] = useState<'gallery' | 'create'>(() => getInitialView());
   const [selectedTemplate, setSelectedTemplate] = useState<MemeTemplate | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [templates, setTemplates] = useState<MemeTemplate[]>([]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -26,18 +27,28 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    loadMemeTemplates().then((loaded) => {
+      if (!cancelled) setTemplates(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const filteredTemplates = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
     if (!query) {
-      return memeTemplates;
+      return templates;
     }
 
-    return memeTemplates.filter((template) => {
+    return templates.filter((template) => {
       const searchable = [template.name, template.id, ...template.tags].join(' ').toLowerCase();
       return searchable.includes(query);
     });
-  }, [searchQuery]);
+  }, [templates, searchQuery]);
 
   const openCreate = () => {
     window.history.pushState({}, '', `${import.meta.env.BASE_URL.replace(/\/$/, '')}/create`);
