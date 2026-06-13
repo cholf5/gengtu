@@ -85,10 +85,14 @@ export function Gallery({
 /**
  * Gallery card cover. When the template has a `thumbnail` crop we wrap the
  * image in a 4:3 container and scale + offset it via percentages so only the
- * chosen region is visible. No JS layout work, no naturalWidth needed —
- * percentages are relative to the same parent for both `width/height` (used
- * to up-scale the image past 100%) and `marginLeft/marginTop` (used to push
- * the unwanted region outside the parent's `overflow: hidden`).
+ * chosen region is visible. No JS layout work, no naturalWidth needed.
+ *
+ * `width` / `height` percentages are relative to the parent's width / height
+ * respectively, but `margin-top` percentages are also resolved against parent
+ * **width** (CSS quirk) — using marginTop here would mis-position the image
+ * vertically whenever the parent isn't square. `transform: translate(%, %)`
+ * resolves percentages against the **element's own** width/height, which
+ * exactly cancels the scaling and works for any aspect ratio.
  */
 function renderTemplateCover(template: MemeTemplate) {
   const crop = template.thumbnail;
@@ -105,8 +109,8 @@ function renderTemplateCover(template: MemeTemplate) {
         style={{
           width: `${100 / crop.width}%`,
           height: `${100 / crop.height}%`,
-          marginLeft: `${(-crop.x * 100) / crop.width}%`,
-          marginTop: `${(-crop.y * 100) / crop.height}%`,
+          transform: `translate(${-crop.x * 100}%, ${-crop.y * 100}%)`,
+          transformOrigin: 'top left',
         }}
       />
     </div>

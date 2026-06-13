@@ -3,6 +3,12 @@
   "name": "Support Tower",
   "url": "/memes/support-tower.png",
   "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.119,
+    "width": 0.7004,
+    "height": 0.4136
+  },
   "textFields": [
     {
       "id": "text_1",
@@ -22,7 +28,7 @@
       "placeholder": "Text 2",
       "x": 186,
       "y": 276,
-      "width": 199,
+      "width": 197,
       "height": 130,
       "fontSize": 59,
       "color": "#000000",
