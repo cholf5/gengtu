@@ -23,6 +23,10 @@ npx vitest                                     # watch mode
 
 There is no lint task; rely on `tsc -b` (run as part of `build`) for type checks.
 
+## Product positioning
+
+Dedicated, single-curator Meme Generator: every template is hand-picked by the author. **No user-upload path, no backend, no account system** — keep it that way unless the user explicitly asks otherwise. New templates are added by the author committing a PNG + JSON pair (see "Templates load via Vite glob" below).
+
 ## Architecture
 
 Pure-frontend, no backend. Static site, vanilla Vite + React + TypeScript + Ant Design v6, deployable to any static host.

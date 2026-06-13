@@ -6,3 +6,8 @@
 - [ ] 多语言支持
 - [x] `/create` 上传后根据文件名自动填充表单
 - [ ] 完成该功能: MVP only generates JSON. Put the image file under public/memes separately.
+- [ ] 添加 Google Analytics
+- [ ] src/memes 里的 json 配置文件迁移到 public/memes 里
+- [x] 考虑下是否增加一个后端来存储 meme 数据
+- [ ] 设计一个 logo
+- [ ] 添加常用 meme 模板

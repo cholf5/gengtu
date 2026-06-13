@@ -1,6 +1,6 @@
 # Open Meme
 
-Open Meme 是一个开源、纯前端的 Meme 生成器。它不需要后端服务、数据库或 API Key，可以作为静态站点部署。
+Open Meme 是一个纯前端的 Meme 生成器，主打"精选模板（Dedicated / Curated）"——所有模板由作者手工挑选并配置，**不开放用户上传**。不需要后端服务、数据库或 API Key，可作为静态站点部署。
 
 ## MVP 功能
 
@@ -26,11 +26,15 @@ npm run dev
 npm run build
 ```
 
-## 添加模板
+## 添加模板（仅作者）
+
+模板由作者本人维护：
 
 1. 将模板图片放入 `public/memes/`。
-2. 在 `src/memes/` 中添加一个 `.json` 文件。
+2. 在 `src/memes/` 中添加一个 `.json` 文件（推荐用站内 `/create` 页面可视化生成后下载）。
 3. JSON 结构应包含 `id`、`name`、`url`、`tags` 和 `textFields`。
+
+`src/memes/index.ts` 通过 `import.meta.glob` 自动注册，无需改注册表。
 
 示例：
 
@@ -56,4 +60,3 @@ npm run build
 }
 ```
 
-完整的可视化模板创建器和自动 JSON Schema 校验会在后续阶段实现。
