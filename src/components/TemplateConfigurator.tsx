@@ -237,7 +237,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
               layout="horizontal"
               size="small"
               colon={false}
-              labelCol={{ flex: '92px' }}
+              labelCol={{ flex: '104px' }}
               wrapperCol={{ flex: 1 }}
               labelAlign="left"
             >

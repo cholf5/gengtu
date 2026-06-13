@@ -1,0 +1,20 @@
+{
+  "id": "Change-My-Mind",
+  "name": "Change My Mind",
+  "url": "/memes/change-my-mind.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 201,
+      "y": 215,
+      "width": 223,
+      "height": 77,
+      "fontSize": 36,
+      "color": "#ffffff",
+      "align": "center",
+      "rotation": -7
+    }
+  ]
+}

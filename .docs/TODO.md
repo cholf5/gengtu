@@ -11,8 +11,16 @@
 - [x] 考虑下是否增加一个后端来存储 meme 数据
 - [ ] 设计一个 logo
 - [ ] 添加常用 meme 模板
+	- [x] Batman Slapping Robin
+	- [x] Bike Fall
+	- [x] Change My Mind
+	- [x] Distracted Boyfriend
+	- [x] Mother Ignoring Kid In A Pool
+	- [ ] Two Buttons
 - [ ] 做了任何编辑后，退出前都提示用户保存
 - [x] Text box 增加旋转功能
+  - [x] ~~旋转后 resize handles 仍在 AABB 角上，没贴在斜框角上~~ — 评估后放弃，imgflip 也没解决；性价比不高，未来想做参考 git log `c797622` 后面的讨论（路径 A：手画 handle + delta 反旋转）。
+- [ ] localStorage 里保存用户最近使用的模板列表，打开首页时按照使用频率排序展示
 
 # 性能优化
 - [x] 图片和 json 配置全部散落在 public/memes 里，考虑下未来数量多了以后是否有性能问题

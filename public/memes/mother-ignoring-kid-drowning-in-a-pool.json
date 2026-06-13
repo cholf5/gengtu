@@ -1,0 +1,52 @@
+{
+  "id": "Mother-Ignoring-Kid-Drowning-In-A-Pool",
+  "name": "Mother Ignoring Kid Drowning In A Pool",
+  "url": "/memes/mother-ignoring-kid-drowning-in-a-pool.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 563,
+      "y": 367,
+      "width": 219,
+      "height": 102,
+      "fontSize": 36,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 308,
+      "y": 263,
+      "width": 174,
+      "height": 75,
+      "fontSize": 36,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Text 3",
+      "x": 73,
+      "y": 522,
+      "width": 232,
+      "height": 85,
+      "fontSize": 36,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_4",
+      "placeholder": "Text 4",
+      "x": 262,
+      "y": 780,
+      "width": 318,
+      "height": 155,
+      "fontSize": 36,
+      "color": "#ffffff",
+      "align": "center"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "id": "Distracted-Boyfriend",
+  "name": "Distracted Boyfriend",
+  "url": "/memes/distracted-boyfriend.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 175,
+      "y": 536,
+      "width": 331,
+      "height": 130,
+      "fontSize": 36,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 588,
+      "y": 334,
+      "width": 295,
+      "height": 141,
+      "fontSize": 36,
+      "color": "#ffffff",
+      "align": "center"
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Text 3",
+      "x": 890,
+      "y": 471,
+      "width": 271,
+      "height": 143,
+      "fontSize": 36,
+      "color": "#ffffff",
+      "align": "center"
+    }
+  ]
+}
