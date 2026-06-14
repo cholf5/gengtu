@@ -1,5 +1,5 @@
 import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, InboxOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Button, Card, Form, Input, Space, Switch, Typography, Upload, message } from 'antd';
+import { Alert, Button, Card, Form, Input, Modal, Space, Switch, Typography, Upload, message } from 'antd';
 import type { UploadProps } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EditableTextField, MemeThumbnailCrop, TextStyleSettings } from '../types';
@@ -377,6 +377,49 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     setSelectedFieldId(remaining[0]?.id ?? '');
   };
 
+  const confirmRemoveSelectedField = () => {
+    if (!selectedField) {
+      return;
+    }
+
+    Modal.confirm({
+      title: '删除文本框？',
+      content: '此操作无法撤销。',
+      okText: '删除',
+      okButtonProps: { danger: true },
+      cancelText: '取消',
+      autoFocusButton: 'cancel',
+      onOk: removeSelectedField,
+    });
+  };
+
+  // Mirrors MemeEditor: Delete / Backspace removes the selected box with a
+  // confirm, but skipped when focus is inside an input/textarea so the user
+  // can edit Field ID / Placeholder / etc. without losing their box.
+  useEffect(() => {
+    if (!selectedField) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Delete' && event.key !== 'Backspace') {
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      if (target) {
+        const tag = target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) {
+          return;
+        }
+      }
+      event.preventDefault();
+      confirmRemoveSelectedField();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedField]);
+
   const duplicateSelectedField = () => {
     if (!selectedField) {
       return;
@@ -612,7 +655,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
             onChange={updateField}
             onStyleChange={setFieldStyle}
             onApplyStyleToAll={applyStyleToAll}
-            onRemove={removeSelectedField}
+            onRemove={confirmRemoveSelectedField}
             onDuplicate={duplicateSelectedField}
           />
 

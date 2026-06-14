@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Card, Empty, Space, Typography } from 'antd';
+import { Alert, Button, Card, Empty, Modal, Space, Typography } from 'antd';
 import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, PlusOutlined } from '@ant-design/icons';
 import { track } from '@vercel/analytics';
 import type { EditableTextField, MemeTemplate, TextStyleSettings } from '../types';
@@ -102,6 +102,49 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
     setSelectedFieldId(remaining[0]?.id ?? '');
     markEdited();
   };
+
+  const confirmRemoveSelectedField = () => {
+    if (!selectedField) {
+      return;
+    }
+
+    Modal.confirm({
+      title: '删除文本框？',
+      content: '此操作无法撤销。',
+      okText: '删除',
+      okButtonProps: { danger: true },
+      cancelText: '取消',
+      autoFocusButton: 'cancel',
+      onOk: removeSelectedField,
+    });
+  };
+
+  // Pressing Delete / Backspace removes the selected text box (with confirm),
+  // but only when focus isn't inside a text input — otherwise we'd hijack the
+  // user's typing inside the Inspector's textarea.
+  useEffect(() => {
+    if (!selectedField) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Delete' && event.key !== 'Backspace') {
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      if (target) {
+        const tag = target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) {
+          return;
+        }
+      }
+      event.preventDefault();
+      confirmRemoveSelectedField();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedField]);
 
   const bringSelectedToTop = () => {
     if (!selectedField) {
@@ -210,7 +253,7 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               onTextChange={(value) => setFieldValue(selectedField.id, value)}
               onRotationChange={(value) => setFieldRotation(selectedField.id, value)}
               onStyleChange={(key, value) => setFieldStyle(selectedField.id, key, value)}
-              onRemove={removeSelectedField}
+              onRemove={confirmRemoveSelectedField}
               onBringToTop={bringSelectedToTop}
               onApplyToAll={applySelectedStyleToAll}
             />
