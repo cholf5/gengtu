@@ -27,7 +27,7 @@ export function Gallery({
             选择模板
           </Typography.Title>
           <Typography.Paragraph type="secondary" style={{ margin: '8px 0 0' }}>
-            所有模板都来自本地 JSON 配置和静态图片资源。
+            全部由站长精挑细选，持续更新。
           </Typography.Paragraph>
         </div>
         <Input.Search
