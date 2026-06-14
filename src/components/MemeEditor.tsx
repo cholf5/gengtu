@@ -335,6 +335,13 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
             </Card>
           )}
 
+          <Checkbox
+            checked={withWatermark}
+            onChange={(event) => setWithWatermark(event.target.checked)}
+          >
+            导出时带水印
+          </Checkbox>
+
           <Space.Compact block>
             <Button
               type="primary"
@@ -354,13 +361,6 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               复制图片
             </Button>
           </Space.Compact>
-
-          <Checkbox
-            checked={withWatermark}
-            onChange={(event) => setWithWatermark(event.target.checked)}
-          >
-            导出时带水印
-          </Checkbox>
 
           {statusMessage && <Alert type="info" showIcon message={statusMessage} />}
         </aside>

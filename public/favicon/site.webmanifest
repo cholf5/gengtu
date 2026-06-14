@@ -1,7 +1,7 @@
 {
   "name": "梗图铺",
   "short_name": "梗图铺",
-  "description": "中文梗图铺：精选模板，一键成梗。",
+  "description": "中文梗图随手做。挑一个模板，改两行字，右键保存。不用登录，不用上传，打开就能用。",
   "icons": [
     {
       "src": "./android-chrome-192x192.png",
