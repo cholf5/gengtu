@@ -12,7 +12,7 @@ import { track } from '@vercel/analytics';
 import type { EditableTextField, MemeTemplate, TextStyleSettings } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
 import { copyEditableMemeToClipboard, downloadEditableMemeImage } from '../utils/canvas';
-import { getWatermarkPreviewStyles, WATERMARK_LOGO_URL, WATERMARK_TEXT } from '../utils/watermark';
+import { getWatermarkPreviewStyle, WATERMARK_TEXT } from '../utils/watermark';
 import {
   createEditableFields,
   createNewEditableField,
@@ -375,11 +375,9 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
  * sync with the exported PNG. Sized in displayed CSS pixels.
  */
 function WatermarkPreview({ previewHeightPx }: { previewHeightPx: number }) {
-  const styles = getWatermarkPreviewStyles(previewHeightPx);
   return (
-    <div style={styles.container} aria-hidden="true">
-      <img src={WATERMARK_LOGO_URL} alt="" style={styles.logo} />
-      <span style={styles.text}>{WATERMARK_TEXT}</span>
-    </div>
+    <span style={getWatermarkPreviewStyle(previewHeightPx)} aria-hidden="true">
+      {WATERMARK_TEXT}
+    </span>
   );
 }

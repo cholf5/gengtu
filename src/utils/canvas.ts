@@ -206,7 +206,7 @@ export async function renderEditableMemeToCanvas(
     .forEach((field) => drawTextField(ctx, field, canvas.height));
 
   if (withWatermark) {
-    await drawWatermark(ctx, canvas);
+    drawWatermark(ctx, canvas);
   }
 
   return canvas;
