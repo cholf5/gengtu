@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Card, Empty, Space, Tooltip, Typography } from 'antd';
+import { Alert, Button, Card, Checkbox, Empty, Space, Tooltip, Typography } from 'antd';
 import {
   ArrowLeftOutlined,
   CopyOutlined,
@@ -12,6 +12,7 @@ import { track } from '@vercel/analytics';
 import type { EditableTextField, MemeTemplate, TextStyleSettings } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
 import { copyEditableMemeToClipboard, downloadEditableMemeImage } from '../utils/canvas';
+import { getWatermarkPreviewStyles, WATERMARK_LOGO_URL, WATERMARK_TEXT } from '../utils/watermark';
 import {
   createEditableFields,
   createNewEditableField,
@@ -48,6 +49,9 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
   const [statusMessage, setStatusMessage] = useState('');
   const [isBusy, setIsBusy] = useState(false);
   const [shouldWarnBeforeUnload, setShouldWarnBeforeUnload] = useState(false);
+  // Default-on; intentionally not persisted across sessions — see design doc
+  // § decision 6. Each export is an independent decision.
+  const [withWatermark, setWithWatermark] = useState(true);
   const { imageRef, imageSize, previewScale, updatePreviewScale } = useImagePreviewScale(template.url);
 
   const selectedField = fields.find((field) => field.id === selectedFieldId) ?? null;
@@ -220,19 +224,19 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
 
     try {
       if (action === 'download') {
-        await downloadEditableMemeImage(template, fields);
+        await downloadEditableMemeImage(template, fields, withWatermark);
         setStatusMessage('图片已开始下载。');
       } else {
-        await copyEditableMemeToClipboard(template, fields);
+        await copyEditableMemeToClipboard(template, fields, withWatermark);
         setStatusMessage('图片已复制到剪切板。');
       }
 
       setShouldWarnBeforeUnload(false);
-      track('meme_export', { templateId: template.id, action, ok: true });
+      track('meme_export', { templateId: template.id, action, ok: true, watermark: withWatermark });
     } catch (error) {
       const fallback = action === 'copy' ? '复制不可用，请下载图片。' : '生成图片失败，请稍后重试。';
       setStatusMessage(error instanceof Error ? error.message : fallback);
-      track('meme_export', { templateId: template.id, action, ok: false });
+      track('meme_export', { templateId: template.id, action, ok: false, watermark: withWatermark });
     } finally {
       setIsBusy(false);
     }
@@ -287,6 +291,11 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               selectedFieldId={selectedFieldId}
               imageSize={imageSize}
               previewScale={previewScale}
+              topOverlay={
+                withWatermark && imageSize.height > 0 ? (
+                  <WatermarkPreview previewHeightPx={imageSize.height * previewScale} />
+                ) : null
+              }
               onImageLoad={updatePreviewScale}
               onSelectField={setSelectedFieldId}
               onFieldRectChange={(fieldId, rect) => {
@@ -346,9 +355,31 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
             </Button>
           </Space.Compact>
 
+          <Checkbox
+            checked={withWatermark}
+            onChange={(event) => setWithWatermark(event.target.checked)}
+          >
+            导出时带水印
+          </Checkbox>
+
           {statusMessage && <Alert type="info" showIcon message={statusMessage} />}
         </aside>
       </div>
     </section>
+  );
+}
+
+/**
+ * Live preview counterpart of `drawWatermark` from `src/utils/watermark.ts`.
+ * Both render paths read the same shared constants so the preview stays in
+ * sync with the exported PNG. Sized in displayed CSS pixels.
+ */
+function WatermarkPreview({ previewHeightPx }: { previewHeightPx: number }) {
+  const styles = getWatermarkPreviewStyles(previewHeightPx);
+  return (
+    <div style={styles.container} aria-hidden="true">
+      <img src={WATERMARK_LOGO_URL} alt="" style={styles.logo} />
+      <span style={styles.text}>{WATERMARK_TEXT}</span>
+    </div>
   );
 }

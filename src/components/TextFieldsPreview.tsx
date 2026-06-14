@@ -17,6 +17,13 @@ interface TextFieldsPreviewProps {
    * frame; left undefined in MemeEditor where the preview shows the full image.
    */
   cropOverlay?: React.ReactNode;
+  /**
+   * Optional content rendered ABOVE the image and the text boxes — a
+   * decorative layer like the export watermark. Kept as a separate slot from
+   * `cropOverlay` because the watermark must sit on top (so it always reads
+   * over user text) while the crop frame must sit underneath the text boxes.
+   */
+  topOverlay?: React.ReactNode;
   onImageLoad: () => void;
   onSelectField: (fieldId: string) => void;
   onFieldRectChange: (fieldId: string, rect: Pick<EditableTextField, 'x' | 'y' | 'width' | 'height'>) => void;
@@ -33,6 +40,7 @@ export function TextFieldsPreview({
   previewScale,
   boxClassName,
   cropOverlay,
+  topOverlay,
   onImageLoad,
   onSelectField,
   onFieldRectChange,
@@ -62,6 +70,7 @@ export function TextFieldsPreview({
           {renderField(field)}
         </TextBoxOverlay>
       ))}
+      {topOverlay}
     </div>
   );
 }

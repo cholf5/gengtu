@@ -1,5 +1,6 @@
 import type { EditableTextField, MemeTemplate, TextStyleOptions, TextStyleSettings, TextValues } from '../types';
 import { createEditableFields, DEFAULT_TEXT_STYLE, getCanvasFont, resolveSizeForImage, resolveTextStyle } from './textStyles';
+import { drawWatermark } from './watermark';
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -185,6 +186,7 @@ function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField, 
 export async function renderEditableMemeToCanvas(
   template: MemeTemplate,
   fields: EditableTextField[],
+  withWatermark = true,
 ): Promise<HTMLCanvasElement> {
   const image = await loadImage(template.url);
   const canvas = document.createElement('canvas');
@@ -203,14 +205,19 @@ export async function renderEditableMemeToCanvas(
     .sort((a, b) => a.zIndex - b.zIndex)
     .forEach((field) => drawTextField(ctx, field, canvas.height));
 
+  if (withWatermark) {
+    await drawWatermark(ctx, canvas);
+  }
+
   return canvas;
 }
 
 export async function downloadEditableMemeImage(
   template: MemeTemplate,
   fields: EditableTextField[],
+  withWatermark = true,
 ) {
-  const canvas = await renderEditableMemeToCanvas(template, fields);
+  const canvas = await renderEditableMemeToCanvas(template, fields, withWatermark);
   const url = canvas.toDataURL('image/png');
   const link = document.createElement('a');
   link.href = url;
@@ -221,12 +228,13 @@ export async function downloadEditableMemeImage(
 export async function copyEditableMemeToClipboard(
   template: MemeTemplate,
   fields: EditableTextField[],
+  withWatermark = true,
 ) {
   if (!navigator.clipboard || typeof navigator.clipboard.write !== 'function' || typeof ClipboardItem === 'undefined') {
     throw new Error('复制不可用，请下载图片。');
   }
 
-  const canvas = await renderEditableMemeToCanvas(template, fields);
+  const canvas = await renderEditableMemeToCanvas(template, fields, withWatermark);
   const blob = await canvasToBlob(canvas);
 
   await navigator.clipboard.write([
@@ -240,6 +248,7 @@ export async function renderMemeToCanvas(
   template: MemeTemplate,
   textValues: TextValues,
   style: TextStyleOptions,
+  withWatermark = true,
 ): Promise<HTMLCanvasElement> {
   const fields = createEditableFields(template.textFields).map((field) => ({
     ...field,
@@ -263,6 +272,7 @@ export async function renderMemeToCanvas(
         ...globalStyle,
       },
     })),
+    withWatermark,
   );
 }
 
@@ -270,8 +280,9 @@ export async function downloadTemplateImage(
   template: MemeTemplate,
   textValues: TextValues,
   style: TextStyleOptions,
+  withWatermark = true,
 ) {
-  const canvas = await renderMemeToCanvas(template, textValues, style);
+  const canvas = await renderMemeToCanvas(template, textValues, style, withWatermark);
   const url = canvas.toDataURL('image/png');
   const link = document.createElement('a');
   link.href = url;
@@ -283,12 +294,13 @@ export async function copyTemplateToClipboard(
   template: MemeTemplate,
   textValues: TextValues,
   style: TextStyleOptions,
+  withWatermark = true,
 ) {
   if (!navigator.clipboard || typeof navigator.clipboard.write !== 'function' || typeof ClipboardItem === 'undefined') {
     throw new Error('复制不可用，请下载图片。');
   }
 
-  const canvas = await renderMemeToCanvas(template, textValues, style);
+  const canvas = await renderMemeToCanvas(template, textValues, style, withWatermark);
   const blob = await canvasToBlob(canvas);
 
   await navigator.clipboard.write([
