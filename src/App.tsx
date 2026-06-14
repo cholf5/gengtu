@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { Button, ConfigProvider, Layout, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { Analytics, track } from '@vercel/analytics/react';
+import { About } from './components/About';
 import { Gallery } from './components/Gallery';
 import { MemeEditor } from './components/MemeEditor';
 import { TemplateConfigurator } from './components/TemplateConfigurator';
@@ -17,8 +18,11 @@ import {
   type TemplateUsageMap,
 } from './utils/templateUsage';
 
-function getViewFromLocation(): 'gallery' | 'create' {
-  return window.location.pathname.endsWith('/create') ? 'create' : 'gallery';
+function getViewFromLocation(): 'gallery' | 'create' | 'about' {
+  const path = window.location.pathname;
+  if (path.endsWith('/create')) return 'create';
+  if (path.endsWith('/about')) return 'about';
+  return 'gallery';
 }
 
 function getTemplateIdFromLocation(): string | null {
@@ -32,7 +36,7 @@ function buildHref(query?: string) {
 }
 
 function App() {
-  const [view, setView] = useState<'gallery' | 'create'>(() => getViewFromLocation());
+  const [view, setView] = useState<'gallery' | 'create' | 'about'>(() => getViewFromLocation());
   const [selectedTemplate, setSelectedTemplate] = useState<MemeTemplate | null>(null);
   const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(() =>
     getTemplateIdFromLocation(),
@@ -137,6 +141,27 @@ function App() {
     setView('create');
   };
 
+  const buildAboutHref = (hash?: string) => {
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+    return `${base}/about${hash ? `#${hash}` : ''}`;
+  };
+
+  const openAbout = (hash?: string) => {
+    window.history.pushState({}, '', buildAboutHref(hash));
+    setSelectedTemplate(null);
+    setPendingTemplateId(null);
+    setView('about');
+    track('about_open', hash ? { hash } : {});
+  };
+
+  const handleAboutClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {
+    // 让 Ctrl/⌘ + 点击仍能新开标签页 —— 保留浏览器原生行为
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    const hash = e.currentTarget.hash.replace(/^#/, '') || undefined;
+    openAbout(hash);
+  };
+
   const goHome = () => {
     window.history.pushState({}, '', buildHref());
     setSelectedTemplate(null);
@@ -169,6 +194,8 @@ function App() {
         <Layout.Content className="app-content">
           {view === 'create' ? (
             <TemplateConfigurator onBack={goHome} />
+          ) : view === 'about' ? (
+            <About onBack={goHome} onOpenCreate={openCreate} />
           ) : selectedTemplate ? (
             <MemeEditor template={selectedTemplate} onBack={closeEditor} />
           ) : (
@@ -182,6 +209,20 @@ function App() {
             />
           )}
         </Layout.Content>
+        <Layout.Footer className="app-footer">
+          <span className="app-footer-copy">© 2026 cholf5 · 梗图铺</span>
+          <nav className="app-footer-links">
+            <a href={buildAboutHref()} onClick={handleAboutClick}>
+              关于本站
+            </a>
+            <a href={buildAboutHref('submit')} onClick={handleAboutClick}>
+              提交模板
+            </a>
+            <a href="https://x.com/cholf5" target="_blank" rel="noreferrer noopener">
+              @cholf5
+            </a>
+          </nav>
+        </Layout.Footer>
       </Layout>
       <Analytics />
     </ConfigProvider>

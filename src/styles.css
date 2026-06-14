@@ -77,6 +77,41 @@ body {
   padding: 24px 0 48px;
 }
 
+/* ---------- Footer ---------- */
+
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px clamp(16px, 4vw, 32px);
+  background: #fafafa;
+  border-top: 1px solid rgba(49, 70, 120, 0.08);
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.app-footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.app-footer-links a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-footer-links a:hover {
+  color: var(--color-primary);
+}
+
+/* ---------- About page ---------- */
+
+.about-page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
 /* ---------- Gallery ---------- */
 
 .gallery-header {
@@ -325,5 +360,13 @@ body {
   .app-header {
     flex-wrap: wrap;
     gap: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }
