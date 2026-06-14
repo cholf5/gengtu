@@ -1,4 +1,6 @@
-import { Card, Checkbox, ColorPicker, Form, InputNumber, Radio, Row, Col, Select, Slider, Space } from 'antd';
+import { BgColorsOutlined } from '@ant-design/icons';
+import { Button, Card, Checkbox, ColorPicker, Form, InputNumber, Radio, Row, Col, Select, Slider, Space } from 'antd';
+import type { ReactNode } from 'react';
 import type { TextAlign, TextEffect, TextStyleSettings, VerticalAlign } from '../types';
 
 const FONT_OPTIONS = ['Impact', 'Arial Black', 'Arial', 'Verdana', 'Comic Sans MS', 'system-ui'];
@@ -14,6 +16,45 @@ interface TextStyleInspectorProps {
 
 function toHex(value: string | { toHexString: () => string }) {
   return typeof value === 'string' ? value : value.toHexString();
+}
+
+// EyeDropper is Chromium-only and not yet in lib.dom — feature-detect at runtime.
+type EyeDropperResult = { sRGBHex: string };
+type EyeDropperCtor = new () => { open: () => Promise<EyeDropperResult> };
+const supportsEyeDropper =
+  typeof window !== 'undefined' && typeof (window as unknown as { EyeDropper?: EyeDropperCtor }).EyeDropper === 'function';
+
+async function pickColorFromScreen(): Promise<string | null> {
+  const Ctor = (window as unknown as { EyeDropper?: EyeDropperCtor }).EyeDropper;
+  if (!Ctor) return null;
+  try {
+    const result = await new Ctor().open();
+    return result.sRGBHex;
+  } catch {
+    // user canceled (Esc) — swallow
+    return null;
+  }
+}
+
+function renderEyeDropperPanel(panel: ReactNode, onPick: (hex: string) => void) {
+  if (!supportsEyeDropper) return panel;
+  return (
+    <>
+      {panel}
+      <Button
+        size="small"
+        icon={<BgColorsOutlined />}
+        block
+        style={{ marginTop: 8 }}
+        onClick={async () => {
+          const hex = await pickColorFromScreen();
+          if (hex) onPick(hex);
+        }}
+      >
+        Pick from screen
+      </Button>
+    </>
+  );
 }
 
 const COMPACT_ITEM_STYLE = { marginBottom: 8 };
@@ -44,6 +85,7 @@ export function TextStyleInspector({ title, style, onChange }: TextStyleInspecto
                 value={style.fontColor}
                 size="small"
                 onChangeComplete={(color) => onChange('fontColor', toHex(color))}
+                panelRender={(panel) => renderEyeDropperPanel(panel, (hex) => onChange('fontColor', hex))}
               />
             </Form.Item>
           </Col>
@@ -53,6 +95,7 @@ export function TextStyleInspector({ title, style, onChange }: TextStyleInspecto
                 value={style.outlineColor}
                 size="small"
                 onChangeComplete={(color) => onChange('outlineColor', toHex(color))}
+                panelRender={(panel) => renderEyeDropperPanel(panel, (hex) => onChange('outlineColor', hex))}
               />
             </Form.Item>
           </Col>
