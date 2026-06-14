@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
-import { Button, ConfigProvider, Layout, Typography } from 'antd';
+import { Button, ConfigProvider, Layout, Space, Typography, theme as antdTheme } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { Analytics, track } from '@vercel/analytics/react';
 import { About } from './components/About';
 import { Gallery } from './components/Gallery';
 import { MemeEditor } from './components/MemeEditor';
 import { TemplateConfigurator } from './components/TemplateConfigurator';
+import { ThemeToggle } from './components/ThemeToggle';
 import { loadMemeTemplates } from './memes';
 import type { MemeTemplate } from './types';
+import { useThemeMode } from './utils/theme';
 import {
   getSortMode,
   getTemplateUsage,
@@ -36,6 +38,7 @@ function buildHref(query?: string) {
 }
 
 function App() {
+  const { mode: themeMode, resolved: resolvedTheme, setMode: setThemeMode } = useThemeMode();
   const [view, setView] = useState<'gallery' | 'create' | 'about'>(() => getViewFromLocation());
   const [selectedTemplate, setSelectedTemplate] = useState<MemeTemplate | null>(null);
   const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(() =>
@@ -172,6 +175,7 @@ function App() {
   return (
     <ConfigProvider
       theme={{
+        algorithm: resolvedTheme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
           colorPrimary: '#4263eb',
           borderRadius: 14,
@@ -190,9 +194,12 @@ function App() {
               <Typography.Text className="app-brand-eyebrow">精选模板，一键成梗</Typography.Text>
             </div>
           </button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-            Create template
-          </Button>
+          <Space size={8}>
+            <ThemeToggle mode={themeMode} onChange={setThemeMode} />
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+              Create template
+            </Button>
+          </Space>
         </Layout.Header>
         <Layout.Content className="app-content">
           {view === 'create' ? (
