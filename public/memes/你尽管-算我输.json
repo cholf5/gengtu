@@ -1,0 +1,49 @@
+{
+  "id": "你尽管-算我输",
+  "name": "你尽管 算我输",
+  "url": "/memes/你尽管-算我输.png",
+  "tags": [],
+  "thumbnail": {
+    "x": 0,
+    "y": 0.0973,
+    "width": 1,
+    "height": 0.75
+  },
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "你尽管复习",
+      "x": 0,
+      "y": 0,
+      "width": 659,
+      "height": 250,
+      "fontSize": 48,
+      "color": "#000000",
+      "align": "center",
+      "effect": "none"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "出题老师",
+      "x": 72,
+      "y": 781,
+      "width": 595,
+      "height": 202,
+      "fontSize": 55,
+      "color": "#b81417",
+      "align": "center"
+    },
+    {
+      "id": "text_3",
+      "placeholder": "考到了算我输",
+      "x": 0,
+      "y": 1004,
+      "width": 1254,
+      "height": 250,
+      "fontSize": 48,
+      "color": "#000000",
+      "align": "center",
+      "effect": "none"
+    }
+  ]
+}
