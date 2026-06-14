@@ -12,8 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev            # Vite dev server
-npm run build          # tsc -b && vite build  (root base)
-npm run build:pages    # tsc -b && vite build --base=/gengtu/  (GitHub Pages)
+npm run build          # tsc -b && vite build
 npm run preview        # preview the production build
 npm run test           # vitest run (jsdom env, single pass)
 npx vitest run path/to/file.test.ts            # run one test file
@@ -35,10 +34,10 @@ Pure-frontend, no backend. Static site, vanilla Vite + React + TypeScript + Ant 
 
 `src/App.tsx` switches between three views by reading `window.location.pathname`:
 
-- `/` (or `/gengtu/` under Pages base) → `<Gallery>`; clicking a card opens `<MemeEditor>` inline (state-driven, no URL change).
+- `/` → `<Gallery>`; clicking a card opens `<MemeEditor>` inline (state-driven, no URL change).
 - `/create` → `<TemplateConfigurator>`. Entered via the header "Create template" button which calls `history.pushState` and listens to `popstate` to keep the back button working.
 
-Anything that constructs URLs must respect `import.meta.env.BASE_URL` (see `App.tsx`'s `openCreate`/`goHome` and `src/memes/index.ts`'s `resolveTemplateUrl`).
+The site is deployed at `https://gengtupu.vercel.app/` (root base). `import.meta.env.BASE_URL` still routes through Vite for asset URLs (see `App.tsx`'s `openCreate`/`goHome` and `src/memes/index.ts`'s `resolveTemplateUrl`), so don't hardcode `/` — keep the BASE_URL plumbing intact.
 
 ### Templates live in `public/memes/`, discovered via a generated manifest
 
