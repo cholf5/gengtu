@@ -182,10 +182,13 @@ function App() {
       <Layout className="app-layout">
         <Layout.Header className="app-header">
           <button className="app-brand" type="button" onClick={goHome}>
-            <Typography.Text className="app-brand-eyebrow">梗图铺</Typography.Text>
-            <Typography.Title level={4} className="app-brand-title">
-              精选模板，一键成梗
-            </Typography.Title>
+            <img className="app-brand-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="梗图铺 Logo" width={40} height={40} />
+            <div className="app-brand-text">
+              <Typography.Text className="app-brand-eyebrow">梗图铺</Typography.Text>
+              <Typography.Title level={4} className="app-brand-title">
+                精选模板，一键成梗
+              </Typography.Title>
+            </div>
           </button>
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
             Create template

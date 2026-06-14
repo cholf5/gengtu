@@ -49,13 +49,27 @@ body {
 }
 
 .app-brand {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   border: 0;
   padding: 4px 6px;
   background: transparent;
   cursor: pointer;
   text-align: left;
+}
+
+.app-brand-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.app-brand-text {
+  display: grid;
+  gap: 2px;
 }
 
 .app-brand-eyebrow {
