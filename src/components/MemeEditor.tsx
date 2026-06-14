@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Card, Empty, Modal, Space, Typography } from 'antd';
-import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, PlusOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Empty, Space, Tooltip, Typography } from 'antd';
+import {
+  ArrowLeftOutlined,
+  CopyOutlined,
+  DownloadOutlined,
+  PlusOutlined,
+  RedoOutlined,
+  UndoOutlined,
+} from '@ant-design/icons';
 import { track } from '@vercel/analytics';
 import type { EditableTextField, MemeTemplate, TextStyleSettings } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
@@ -13,6 +20,8 @@ import {
   getVerticalAlignClass,
   resolveTextStyle,
 } from '../utils/textStyles';
+import { useUndoableState } from '../utils/useUndoableState';
+import { useUndoKeyboard } from '../utils/useUndoKeyboard';
 import { SelectedTextInspector } from './SelectedTextInspector';
 import { TextFieldsPreview } from './TextFieldsPreview';
 
@@ -26,7 +35,15 @@ function updateField(fields: EditableTextField[], fieldId: string, updater: (fie
 }
 
 export function MemeEditor({ template, onBack }: MemeEditorProps) {
-  const [fields, setFields] = useState<EditableTextField[]>(() => createEditableFields(template.textFields));
+  const {
+    state: fields,
+    setState: setFields,
+    undo,
+    redo,
+    reset: resetFields,
+    canUndo,
+    canRedo,
+  } = useUndoableState<EditableTextField[]>(() => createEditableFields(template.textFields));
   const [selectedFieldId, setSelectedFieldId] = useState(template.textFields[0]?.id ?? '');
   const [statusMessage, setStatusMessage] = useState('');
   const [isBusy, setIsBusy] = useState(false);
@@ -34,6 +51,35 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
   const { imageRef, imageSize, previewScale, updatePreviewScale } = useImagePreviewScale(template.url);
 
   const selectedField = fields.find((field) => field.id === selectedFieldId) ?? null;
+
+  // When the parent swaps the template prop without unmounting MemeEditor,
+  // wipe the undo stack and re-seed `fields` from the new template. This also
+  // covers a latent bug: `useState(() => …)` only ran once on mount, so prior
+  // template changes left stale field data in place.
+  //
+  // Depend on `template.id` (the semantic identity) rather than `template`
+  // itself: if the parent ever rebuilds the template object without changing
+  // its id (e.g. a hypothetical reload of the manifest), we must NOT discard
+  // the user's in-flight edits and undo stack. See review doc § #6.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    resetFields(createEditableFields(template.textFields));
+    setSelectedFieldId(template.textFields[0]?.id ?? '');
+    setStatusMessage('');
+    setShouldWarnBeforeUnload(false);
+  }, [template.id, resetFields]);
+
+  useUndoKeyboard(undo, redo, canUndo, canRedo);
+
+  // After undo/redo (and any other path that mutates `fields`), the previously
+  // selected field id might no longer exist. Fall back to the first remaining
+  // field — keeps the inspector populated rather than silently going blank.
+  // See review doc § #5.
+  useEffect(() => {
+    if (selectedFieldId && !fields.some((field) => field.id === selectedFieldId)) {
+      setSelectedFieldId(fields[0]?.id ?? '');
+    }
+  }, [fields, selectedFieldId]);
 
   useEffect(() => {
     if (!shouldWarnBeforeUnload) {
@@ -55,12 +101,18 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
   };
 
   const setFieldValue = (fieldId: string, value: string) => {
-    setFields((current) => updateField(current, fieldId, (field) => ({ ...field, text: value })));
+    setFields(
+      (current) => updateField(current, fieldId, (field) => ({ ...field, text: value })),
+      { coalesceKey: `text:${fieldId}` },
+    );
     markEdited();
   };
 
   const setFieldRotation = (fieldId: string, value: number) => {
-    setFields((current) => updateField(current, fieldId, (field) => ({ ...field, rotation: value })));
+    setFields(
+      (current) => updateField(current, fieldId, (field) => ({ ...field, rotation: value })),
+      { coalesceKey: `rotation:${fieldId}` },
+    );
     markEdited();
   };
 
@@ -69,14 +121,20 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
     key: K,
     value: TextStyleSettings[K],
   ) => {
-    setFields((current) =>
-      updateField(current, fieldId, (field) => ({
-        ...field,
-        styleOverrides: {
-          ...field.styleOverrides,
-          [key]: value,
-        },
-      })),
+    // Merge consecutive numeric tweaks (font size / outline width / opacity
+    // sliders) but keep discrete picks (color, alignment, bold/italic toggles,
+    // effect mode) as standalone undo steps — see design doc § 4.
+    const isNumeric = typeof value === 'number';
+    setFields(
+      (current) =>
+        updateField(current, fieldId, (field) => ({
+          ...field,
+          styleOverrides: {
+            ...field.styleOverrides,
+            [key]: value,
+          },
+        })),
+      isNumeric ? { coalesceKey: `style:${fieldId}:${String(key)}` } : undefined,
     );
     markEdited();
   };
@@ -103,25 +161,10 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
     markEdited();
   };
 
-  const confirmRemoveSelectedField = () => {
-    if (!selectedField) {
-      return;
-    }
-
-    Modal.confirm({
-      title: '删除文本框？',
-      content: '此操作无法撤销。',
-      okText: '删除',
-      okButtonProps: { danger: true },
-      cancelText: '取消',
-      autoFocusButton: 'cancel',
-      onOk: removeSelectedField,
-    });
-  };
-
-  // Pressing Delete / Backspace removes the selected text box (with confirm),
-  // but only when focus isn't inside a text input — otherwise we'd hijack the
-  // user's typing inside the Inspector's textarea.
+  // Pressing Delete / Backspace removes the selected text box, but only when
+  // focus isn't inside a text input — otherwise we'd hijack the user's typing
+  // inside the Inspector's textarea. Removal is reversible via Ctrl+Z, so we
+  // skip the confirm dialog and let undo serve as the safety net.
   useEffect(() => {
     if (!selectedField) {
       return;
@@ -139,7 +182,7 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
         }
       }
       event.preventDefault();
-      confirmRemoveSelectedField();
+      removeSelectedField();
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -201,6 +244,23 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
         <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
           返回模板
         </Button>
+        <Space.Compact>
+          {/*
+            Antd Tooltip can't pick up mouse events on a disabled <button>, so
+            wrap each button in a <span> the tooltip can hover-detect. This
+            keeps the shortcut hint visible even when the action is unavailable.
+          */}
+          <Tooltip title="撤销 (Ctrl+Z)">
+            <span style={{ display: 'inline-block' }}>
+              <Button icon={<UndoOutlined />} onClick={undo} disabled={!canUndo} aria-label="撤销" />
+            </span>
+          </Tooltip>
+          <Tooltip title="重做 (Ctrl+Y)">
+            <span style={{ display: 'inline-block' }}>
+              <Button icon={<RedoOutlined />} onClick={redo} disabled={!canRedo} aria-label="重做" />
+            </span>
+          </Tooltip>
+        </Space.Compact>
         <div>
           <Typography.Title level={3} style={{ margin: 0 }}>
             {template.name}
@@ -230,7 +290,10 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               onImageLoad={updatePreviewScale}
               onSelectField={setSelectedFieldId}
               onFieldRectChange={(fieldId, rect) => {
-                setFields((current) => updateField(current, fieldId, (field) => ({ ...field, ...rect })));
+                setFields(
+                  (current) => updateField(current, fieldId, (field) => ({ ...field, ...rect })),
+                  { coalesceKey: `rect:${fieldId}` },
+                );
                 markEdited();
               }}
               renderField={(field) => {
@@ -253,7 +316,7 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               onTextChange={(value) => setFieldValue(selectedField.id, value)}
               onRotationChange={(value) => setFieldRotation(selectedField.id, value)}
               onStyleChange={(key, value) => setFieldStyle(selectedField.id, key, value)}
-              onRemove={confirmRemoveSelectedField}
+              onRemove={removeSelectedField}
               onBringToTop={bringSelectedToTop}
               onApplyToAll={applySelectedStyleToAll}
             />

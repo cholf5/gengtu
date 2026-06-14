@@ -1,5 +1,5 @@
-import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, InboxOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Button, Card, Form, Input, Modal, Space, Switch, Typography, Upload, message } from 'antd';
+import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, InboxOutlined, PlusOutlined, RedoOutlined, UndoOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Form, Input, Space, Switch, Tooltip, Typography, Upload, message } from 'antd';
 import type { UploadProps } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EditableTextField, MemeThumbnailCrop, TextStyleSettings } from '../types';
@@ -24,6 +24,8 @@ import {
 } from '../utils/templateConfigurator';
 import { buildImportedDraft, parseTemplateJson, resolveTemplateImageUrl } from '../utils/templateImport';
 import { DEFAULT_TEXT_STYLE, getPreviewText, getPreviewTextStyle, getVerticalAlignClass, resolveTextStyle } from '../utils/textStyles';
+import { useUndoableState } from '../utils/useUndoableState';
+import { useUndoKeyboard } from '../utils/useUndoKeyboard';
 import { TemplateFieldInspector } from './TemplateFieldInspector';
 import { TextFieldsPreview } from './TextFieldsPreview';
 import { ThumbnailCropOverlay } from './ThumbnailCropOverlay';
@@ -48,7 +50,15 @@ const initialDraft: DraftState = {
 export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
   const [draft, setDraft] = useState<DraftState>(initialDraft);
   const [imageUrl, setImageUrl] = useState('');
-  const [fields, setFields] = useState<EditableTextField[]>([]);
+  const {
+    state: fields,
+    setState: setFields,
+    undo,
+    redo,
+    reset: resetFields,
+    canUndo,
+    canRedo,
+  } = useUndoableState<EditableTextField[]>([]);
   const [selectedFieldId, setSelectedFieldId] = useState('');
   const [cropEnabled, setCropEnabled] = useState(false);
   // Crop rect is stored in NATURAL image pixels, mirroring how text boxes are
@@ -71,6 +81,18 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
   // Tracks blob: URLs we created so we revoke them on replace / unmount,
   // without revoking external URLs (when fetch fallback isn't used).
   const blobUrlRef = useRef<string | null>(null);
+
+  useUndoKeyboard(undo, redo, canUndo, canRedo);
+
+  // After undo/redo (and any other path that mutates `fields`), the previously
+  // selected field id might no longer exist. Fall back to the first remaining
+  // field — keeps the inspector populated rather than silently going blank.
+  // See review doc § #5.
+  useEffect(() => {
+    if (selectedFieldId && !fields.some((field) => field.id === selectedFieldId)) {
+      setSelectedFieldId(fields[0]?.id ?? '');
+    }
+  }, [fields, selectedFieldId]);
 
   const selectedField = fields.find((field) => field.id === selectedFieldId) ?? null;
   const selectedEffectiveStyle = selectedField ? resolveTextStyle(selectedField) : DEFAULT_TEXT_STYLE;
@@ -149,7 +171,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     const { template, draft: importedDraft } = result;
 
     setDraft(importedDraft.draft);
-    setFields(importedDraft.fields);
+    resetFields(importedDraft.fields);
     setSelectedFieldId(importedDraft.fields[0]?.id ?? '');
     setCropEnabled(false);
     setCropRect(null);
@@ -176,7 +198,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
    */
   const handleImageFile = (file: File) => {
     setPreviewImage(URL.createObjectURL(file), { isBlob: true });
-    setFields([]);
+    resetFields([]);
     setSelectedFieldId('');
     setCropEnabled(false);
     setCropRect(null);
@@ -284,20 +306,34 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
       patch = { ...patch, id: nextId };
     }
 
-    setFields((current) =>
-      current.map((field) => {
-        if (field.id !== fieldId) {
-          return field;
-        }
+    // Numeric tweaks via the inspector's InputNumber / sliders should coalesce
+    // into a single undo step when the user holds the spinner / drags the
+    // slider. Anything text-y (id / placeholder) is a sequence of typed
+    // characters — also coalesce. Patches that touch multiple keys at once
+    // (rare; only `placeholder` mirrors into `text`) are treated as one edit
+    // keyed off whichever field they target.
+    const patchKeys = Object.keys(patch);
+    const coalesce =
+      patchKeys.length > 0
+        ? { coalesceKey: `field:${fieldId}:${patchKeys.sort().join(',')}` }
+        : undefined;
 
-        const next = { ...field, ...patch };
-        const clamped = clampBoxToImage(
-          { x: next.x, y: next.y, width: next.width, height: next.height },
-          imageSize,
-          { minWidth: 1, minHeight: 1 },
-        );
-        return { ...next, ...clamped };
-      }),
+    setFields(
+      (current) =>
+        current.map((field) => {
+          if (field.id !== fieldId) {
+            return field;
+          }
+
+          const next = { ...field, ...patch };
+          const clamped = clampBoxToImage(
+            { x: next.x, y: next.y, width: next.width, height: next.height },
+            imageSize,
+            { minWidth: 1, minHeight: 1 },
+          );
+          return { ...next, ...clamped };
+        }),
+      coalesce,
     );
 
     if (patch.id && patch.id !== fieldId) {
@@ -377,25 +413,10 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     setSelectedFieldId(remaining[0]?.id ?? '');
   };
 
-  const confirmRemoveSelectedField = () => {
-    if (!selectedField) {
-      return;
-    }
-
-    Modal.confirm({
-      title: '删除文本框？',
-      content: '此操作无法撤销。',
-      okText: '删除',
-      okButtonProps: { danger: true },
-      cancelText: '取消',
-      autoFocusButton: 'cancel',
-      onOk: removeSelectedField,
-    });
-  };
-
-  // Mirrors MemeEditor: Delete / Backspace removes the selected box with a
-  // confirm, but skipped when focus is inside an input/textarea so the user
-  // can edit Field ID / Placeholder / etc. without losing their box.
+  // Mirrors MemeEditor: Delete / Backspace removes the selected box, but
+  // skipped when focus is inside an input/textarea so the user can edit
+  // Field ID / Placeholder / etc. without losing their box. Removal is
+  // reversible via Ctrl+Z, so no confirm dialog.
   useEffect(() => {
     if (!selectedField) {
       return;
@@ -413,7 +434,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
         }
       }
       event.preventDefault();
-      confirmRemoveSelectedField();
+      removeSelectedField();
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -435,12 +456,17 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     key: K,
     value: TextStyleSettings[K],
   ) => {
-    setFields((current) =>
-      current.map((field) =>
-        field.id === fieldId
-          ? { ...field, styleOverrides: { ...field.styleOverrides, [key]: value } }
-          : field,
-      ),
+    // Same rule as MemeEditor: numeric sliders coalesce per-key, discrete
+    // picks (color, alignment, effect mode, bold/italic) stand alone.
+    const isNumeric = typeof value === 'number';
+    setFields(
+      (current) =>
+        current.map((field) =>
+          field.id === fieldId
+            ? { ...field, styleOverrides: { ...field.styleOverrides, [key]: value } }
+            : field,
+        ),
+      isNumeric ? { coalesceKey: `style:${fieldId}:${String(key)}` } : undefined,
     );
   };
 
@@ -489,6 +515,19 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
         <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
           返回模板
         </Button>
+        <Space.Compact>
+          {/* See MemeEditor for why disabled buttons are wrapped in <span>. */}
+          <Tooltip title="撤销 (Ctrl+Z)">
+            <span style={{ display: 'inline-block' }}>
+              <Button icon={<UndoOutlined />} onClick={undo} disabled={!canUndo} aria-label="撤销" />
+            </span>
+          </Tooltip>
+          <Tooltip title="重做 (Ctrl+Y)">
+            <span style={{ display: 'inline-block' }}>
+              <Button icon={<RedoOutlined />} onClick={redo} disabled={!canRedo} aria-label="重做" />
+            </span>
+          </Tooltip>
+        </Space.Compact>
         <div>
           <Typography.Title level={3} style={{ margin: 0 }}>
             Create template
@@ -655,7 +694,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
             onChange={updateField}
             onStyleChange={setFieldStyle}
             onApplyStyleToAll={applyStyleToAll}
-            onRemove={confirmRemoveSelectedField}
+            onRemove={removeSelectedField}
             onDuplicate={duplicateSelectedField}
           />
 
