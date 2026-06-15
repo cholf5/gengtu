@@ -7,7 +7,7 @@
  *   - `<WatermarkOverlay>` for the React preview
  *   - `drawWatermark()` for the canvas export
  *
- * Default-on, can be toggled off via the editor's "导出时带水印" checkbox.
+ * Default-on, can be toggled off via the editor's "水印" checkbox.
  * Sizes/padding scale with `imageHeight` so the watermark looks visually
  * consistent across image resolutions, mirroring `resolveSizeForImage`'s
  * approach for text fields. The visual goal is "small enough not to be

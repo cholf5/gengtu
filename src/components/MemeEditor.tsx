@@ -5,6 +5,7 @@ import {
   CopyOutlined,
   DownloadOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
   RedoOutlined,
   UndoOutlined,
 } from '@ant-design/icons';
@@ -349,7 +350,10 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
             checked={withWatermark}
             onChange={(event) => setWithWatermark(event.target.checked)}
           >
-            导出时带水印
+            水印
+            <Tooltip title="留着水印能让看到这张图的人顺着找回来，纯粹是希望多一个人用上这个趁手的工具。不需要可以取消。">
+              <QuestionCircleOutlined style={{ marginLeft: 4, opacity: 0.55 }} />
+            </Tooltip>
           </Checkbox>
 
           <Space.Compact block>
