@@ -66,8 +66,13 @@ export function About({ onOpenCreate }: AboutProps) {
           <Typography.Paragraph style={{ marginBottom: 12 }}>
             于是干脆做了这个站：单人策展，模板都是我手挑的，不开放上传，不用登录，没有后端。打开就能用，做完图直接下载，没有水印，没有广告。
           </Typography.Paragraph>
-          <Typography.Paragraph style={{ marginBottom: 0 }}>
+          <Typography.Paragraph style={{ marginBottom: 12 }}>
             如果你也常用 imgflip，希望梗图铺能补上那块中文模板的空白。
+          </Typography.Paragraph>
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 0, fontSize: 13 }}>
+            另：部分界面是英文的，纯粹是我个人习惯（Unity / Figma 用多了，看英文 UI 更顺），不打算做多语言切换。
+            <br />
+            This is a personal curator-style meme generator. UI is in English by author preference.
           </Typography.Paragraph>
         </Card>
 
