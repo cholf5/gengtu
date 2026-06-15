@@ -183,29 +183,55 @@ function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField, 
   ctx.restore();
 }
 
+/**
+ * `exportScale` matches the on-screen preview's CSS scale (image.clientWidth /
+ * naturalWidth). Output canvas dimensions become `natural * exportScale`, and
+ * we apply a single ctx.scale(...) so text-field coordinates (stored in
+ * natural pixels) and font sizes (also resolved against natural height via
+ * `resolveSizeForImage`) automatically project to the same physical layout
+ * the user sees. Without this, exporting a small source image (e.g. 400×387
+ * `batman-slapping-robin.jpg`) produced a tiny PNG that didn't match the
+ * preview — see commit message for details.
+ *
+ * Pass `1` to keep the legacy "natural-size export" behavior (no callers do
+ * today; left as the default for API compatibility).
+ */
 export async function renderEditableMemeToCanvas(
   template: MemeTemplate,
   fields: EditableTextField[],
   withWatermark = true,
+  exportScale = 1,
 ): Promise<HTMLCanvasElement> {
   const image = await loadImage(template.url);
+  const naturalWidth = image.naturalWidth || image.width;
+  const naturalHeight = image.naturalHeight || image.height;
+  const safeScale = exportScale > 0 ? exportScale : 1;
   const canvas = document.createElement('canvas');
-  canvas.width = image.naturalWidth || image.width;
-  canvas.height = image.naturalHeight || image.height;
+  canvas.width = Math.max(1, Math.round(naturalWidth * safeScale));
+  canvas.height = Math.max(1, Math.round(naturalHeight * safeScale));
 
   const ctx = canvas.getContext('2d');
   if (!ctx) {
     throw new Error('当前浏览器不支持 Canvas 渲染。');
   }
 
-  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  // Image + text fields are drawn in natural-pixel coordinates and then
+  // scaled to canvas pixels in one step, so scaling stays uniform across
+  // the image, text geometry, font sizes, and outlines/shadows.
+  ctx.save();
+  ctx.scale(safeScale, safeScale);
+  ctx.drawImage(image, 0, 0, naturalWidth, naturalHeight);
 
   fields
     .slice()
     .sort((a, b) => a.zIndex - b.zIndex)
-    .forEach((field) => drawTextField(ctx, field, canvas.height));
+    .forEach((field) => drawTextField(ctx, field, naturalHeight));
+  ctx.restore();
 
   if (withWatermark) {
+    // Watermark sizes itself off canvas.width/height directly. Drawing it
+    // AFTER ctx.restore() means it reads the post-scale canvas dimensions
+    // and matches `getWatermarkPreviewStyle(previewHeightPx)` exactly.
     drawWatermark(ctx, canvas);
   }
 
@@ -216,8 +242,9 @@ export async function downloadEditableMemeImage(
   template: MemeTemplate,
   fields: EditableTextField[],
   withWatermark = true,
+  exportScale = 1,
 ) {
-  const canvas = await renderEditableMemeToCanvas(template, fields, withWatermark);
+  const canvas = await renderEditableMemeToCanvas(template, fields, withWatermark, exportScale);
   const url = canvas.toDataURL('image/png');
   const link = document.createElement('a');
   link.href = url;
@@ -229,12 +256,13 @@ export async function copyEditableMemeToClipboard(
   template: MemeTemplate,
   fields: EditableTextField[],
   withWatermark = true,
+  exportScale = 1,
 ) {
   if (!navigator.clipboard || typeof navigator.clipboard.write !== 'function' || typeof ClipboardItem === 'undefined') {
     throw new Error('复制不可用，请下载图片。');
   }
 
-  const canvas = await renderEditableMemeToCanvas(template, fields, withWatermark);
+  const canvas = await renderEditableMemeToCanvas(template, fields, withWatermark, exportScale);
   const blob = await canvasToBlob(canvas);
 
   await navigator.clipboard.write([
@@ -249,6 +277,7 @@ export async function renderMemeToCanvas(
   textValues: TextValues,
   style: TextStyleOptions,
   withWatermark = true,
+  exportScale = 1,
 ): Promise<HTMLCanvasElement> {
   const fields = createEditableFields(template.textFields).map((field) => ({
     ...field,
@@ -273,6 +302,7 @@ export async function renderMemeToCanvas(
       },
     })),
     withWatermark,
+    exportScale,
   );
 }
 
@@ -281,8 +311,9 @@ export async function downloadTemplateImage(
   textValues: TextValues,
   style: TextStyleOptions,
   withWatermark = true,
+  exportScale = 1,
 ) {
-  const canvas = await renderMemeToCanvas(template, textValues, style, withWatermark);
+  const canvas = await renderMemeToCanvas(template, textValues, style, withWatermark, exportScale);
   const url = canvas.toDataURL('image/png');
   const link = document.createElement('a');
   link.href = url;
@@ -295,12 +326,13 @@ export async function copyTemplateToClipboard(
   textValues: TextValues,
   style: TextStyleOptions,
   withWatermark = true,
+  exportScale = 1,
 ) {
   if (!navigator.clipboard || typeof navigator.clipboard.write !== 'function' || typeof ClipboardItem === 'undefined') {
     throw new Error('复制不可用，请下载图片。');
   }
 
-  const canvas = await renderMemeToCanvas(template, textValues, style, withWatermark);
+  const canvas = await renderMemeToCanvas(template, textValues, style, withWatermark, exportScale);
   const blob = await canvasToBlob(canvas);
 
   await navigator.clipboard.write([

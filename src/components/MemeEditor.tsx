@@ -222,12 +222,22 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
     setIsBusy(true);
     setStatusMessage('');
 
+    // "What you see is what you get" means matching what the user sees on
+    // their physical screen — not what the CSS layout says. On a HiDPI
+    // display the preview occupies `previewScale × naturalSize` CSS pixels
+    // but `previewScale × naturalSize × dpr` real pixels, and the browser
+    // uses those extra pixels for font antialiasing. If we exported at CSS
+    // resolution, the PNG would look ~half-size and noticeably blurrier
+    // than the preview on a DPR=2 monitor (especially the small watermark).
+    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    const exportScale = previewScale * dpr;
+
     try {
       if (action === 'download') {
-        await downloadEditableMemeImage(template, fields, withWatermark);
+        await downloadEditableMemeImage(template, fields, withWatermark, exportScale);
         setStatusMessage('图片已开始下载。');
       } else {
-        await copyEditableMemeToClipboard(template, fields, withWatermark);
+        await copyEditableMemeToClipboard(template, fields, withWatermark, exportScale);
         setStatusMessage('图片已复制到剪切板。');
       }
 
