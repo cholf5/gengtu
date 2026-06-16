@@ -1,0 +1,19 @@
+{
+  "id": "Ma-Huateng-Think",
+  "name": "Ma Huateng Think",
+  "url": "/memes/ma-huateng-think.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "问问题之前，先想想自己充了多少钱",
+      "x": 0,
+      "y": 87,
+      "width": 1023,
+      "height": 182,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center"
+    }
+  ]
+}
