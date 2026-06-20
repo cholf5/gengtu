@@ -12,10 +12,11 @@
       "width": 108,
       "height": 105,
       "fontSize": 40,
-      "color": "#ffffff",
+      "color": "#000000",
       "align": "center",
       "bold": false,
       "uppercase": false,
+      "effect": "none",
       "rotation": -4
     },
     {

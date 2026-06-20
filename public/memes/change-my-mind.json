@@ -11,9 +11,11 @@
       "y": 215,
       "width": 223,
       "height": 77,
-      "fontSize": 72,
-      "color": "#ffffff",
+      "fontSize": 65,
+      "color": "#000000",
       "align": "center",
+      "bold": false,
+      "effect": "none",
       "rotation": -7
     }
   ]
