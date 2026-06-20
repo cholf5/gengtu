@@ -1,0 +1,53 @@
+{
+  "id": "Dam",
+  "name": "Dam",
+  "url": "/memes/dam.png",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 256,
+      "y": 0,
+      "width": 383,
+      "height": 107,
+      "fontSize": 40,
+      "color": "#ffffff",
+      "align": "center",
+      "fontFamily": "Arial",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 141,
+      "y": 227,
+      "width": 383,
+      "height": 107,
+      "fontSize": 40,
+      "color": "#ffffff",
+      "align": "center",
+      "fontFamily": "Arial",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Text 3",
+      "x": 78,
+      "y": 452,
+      "width": 383,
+      "height": 107,
+      "fontSize": 40,
+      "color": "#ffffff",
+      "align": "center",
+      "fontFamily": "Arial",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    }
+  ]
+}

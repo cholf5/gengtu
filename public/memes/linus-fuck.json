@@ -1,0 +1,22 @@
+{
+  "id": "Linus-Fuck",
+  "name": "Linus Fuck",
+  "url": "/memes/linus-fuck.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Nvidia, Fuck you",
+      "x": 0,
+      "y": 328,
+      "width": 695,
+      "height": 133,
+      "fontSize": 100,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow",
+      "maxFontSize": 180
+    }
+  ]
+}

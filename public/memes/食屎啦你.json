@@ -1,0 +1,22 @@
+{
+  "id": "食屎啦你",
+  "name": "食屎啦你",
+  "url": "/memes/食屎啦你.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "食屎啦你",
+      "x": 0,
+      "y": 304,
+      "width": 694,
+      "height": 87,
+      "fontSize": 80,
+      "color": "#ffffff",
+      "align": "center",
+      "uppercase": false,
+      "effect": "glow",
+      "maxFontSize": 180
+    }
+  ]
+}
