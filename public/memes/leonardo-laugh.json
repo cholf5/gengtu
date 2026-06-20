@@ -1,0 +1,34 @@
+{
+  "id": "Leonardo-Laugh",
+  "name": "Leonardo Laugh",
+  "url": "/memes/leonardo-laugh.webp",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 0,
+      "y": 1,
+      "width": 470,
+      "height": 90,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 0,
+      "y": 380,
+      "width": 470,
+      "height": 90,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false
+    }
+  ]
+}

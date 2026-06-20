@@ -1,0 +1,78 @@
+{
+  "id": "Hysterical-Arguments",
+  "name": "Hysterical Arguments",
+  "url": "/memes/hysterical-arguments.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 0,
+      "y": 242,
+      "width": 636,
+      "height": 119,
+      "fontSize": 25,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 222,
+      "y": 586,
+      "width": 418,
+      "height": 134,
+      "fontSize": 20,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Text 3",
+      "x": 0,
+      "y": 958,
+      "width": 636,
+      "height": 119,
+      "fontSize": 25,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_4",
+      "placeholder": "Text 4",
+      "x": 2,
+      "y": 1321,
+      "width": 322,
+      "height": 119,
+      "fontSize": 20,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_5",
+      "placeholder": "Text 5",
+      "x": 0,
+      "y": 1680,
+      "width": 636,
+      "height": 119,
+      "fontSize": 25,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "glow"
+    }
+  ]
+}

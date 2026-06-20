@@ -1,0 +1,34 @@
+{
+  "id": "Terminator-And-Fear-Girl",
+  "name": "Terminator And Fear Girl",
+  "url": "/memes/terminator-and-fear-girl.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 0,
+      "y": 0,
+      "width": 237,
+      "height": 67,
+      "fontSize": 40,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 260,
+      "y": 383,
+      "width": 273,
+      "height": 156,
+      "fontSize": 40,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "effect": "glow"
+    }
+  ]
+}

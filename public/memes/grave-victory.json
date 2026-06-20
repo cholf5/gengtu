@@ -1,0 +1,35 @@
+{
+  "id": "Grave-Victory",
+  "name": "Grave Victory",
+  "url": "/memes/grave-victory.webp",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Twitter",
+      "x": 73,
+      "y": 152,
+      "width": 108,
+      "height": 105,
+      "fontSize": 40,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "rotation": -4
+    },
+    {
+      "id": "text_2",
+      "placeholder": "X",
+      "x": 277,
+      "y": 285,
+      "width": 155,
+      "height": 90,
+      "fontSize": 40,
+      "color": "#ffffff",
+      "align": "center",
+      "bold": false,
+      "uppercase": false
+    }
+  ]
+}

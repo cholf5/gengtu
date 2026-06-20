@@ -1,0 +1,37 @@
+{
+  "id": "Trump-Blank-Executive-Order",
+  "name": "Trump Blank Executive Order",
+  "url": "/memes/trump-blank-executive-order.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Make America Great Again",
+      "x": 722,
+      "y": 538,
+      "width": 487,
+      "height": 652,
+      "fontSize": 48,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "none"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "thank you for your attention to this matter",
+      "x": 1251,
+      "y": 542,
+      "width": 487,
+      "height": 481,
+      "fontSize": 44,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "none",
+      "rotation": -1
+    }
+  ]
+}
