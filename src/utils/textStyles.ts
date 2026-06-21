@@ -11,6 +11,8 @@ import type { EditableTextField, MemeTextField, TextStyleOverrides, TextStyleSet
  * `scripts/migrate-font-sizes.mjs` against `public/memes/*.json`.
  */
 export const REFERENCE_IMAGE_HEIGHT = 720;
+export const TEXT_FIELD_PADDING = 4;
+export const TEXT_LINE_HEIGHT_RATIO = 1.05;
 
 export const DEFAULT_TEXT_STYLE: TextStyleSettings = {
   fontSize: 48,
@@ -101,6 +103,16 @@ export function resolveSizeForImage(value: number, imageHeight: number) {
   return value * (imageHeight / REFERENCE_IMAGE_HEIGHT);
 }
 
+export function getTextContentBox(width: number, height: number, imageHeight: number) {
+  const padding = resolveSizeForImage(TEXT_FIELD_PADDING, imageHeight);
+
+  return {
+    padding,
+    width: Math.max(1, width - padding * 2),
+    height: Math.max(1, height - padding * 2),
+  };
+}
+
 export function getCanvasFont(style: TextStyleSettings, fontSize = style.fontSize) {
   const parts = [];
 
@@ -132,6 +144,7 @@ export function getCanvasFont(style: TextStyleSettings, fontSize = style.fontSiz
 export function getPreviewTextStyle(style: TextStyleSettings, previewScale: number, imageHeight: number): CSSProperties {
   const pixelOutlineWidth = resolveSizeForImage(style.outlineWidth, imageHeight);
   const pixelFontSize = resolveSizeForImage(Math.min(style.fontSize, style.maxFontSize), imageHeight);
+  const previewPadding = resolveSizeForImage(TEXT_FIELD_PADDING, imageHeight) * previewScale;
   const strokeWidth = Math.max(0, pixelOutlineWidth * previewScale);
   const previewFontSize = pixelFontSize * previewScale;
   const glowBlur = Math.max(8, pixelOutlineWidth * 4) * previewScale;
@@ -146,6 +159,8 @@ export function getPreviewTextStyle(style: TextStyleSettings, previewScale: numb
 
   return {
     fontSize: `${previewFontSize}px`,
+    lineHeight: TEXT_LINE_HEIGHT_RATIO,
+    padding: `${previewPadding}px`,
     color: style.fontColor,
     fontFamily: style.fontFamily,
     fontWeight: style.bold ? 900 : 400,

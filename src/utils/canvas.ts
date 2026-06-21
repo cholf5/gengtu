@@ -1,5 +1,13 @@
 import type { EditableTextField, MemeTemplate, TextStyleOptions, TextStyleSettings, TextValues } from '../types';
-import { createEditableFields, DEFAULT_TEXT_STYLE, getCanvasFont, resolveSizeForImage, resolveTextStyle } from './textStyles';
+import {
+  TEXT_LINE_HEIGHT_RATIO,
+  createEditableFields,
+  DEFAULT_TEXT_STYLE,
+  getCanvasFont,
+  getTextContentBox,
+  resolveSizeForImage,
+  resolveTextStyle,
+} from './textStyles';
 import { drawWatermark } from './watermark';
 
 export function loadImage(src: string, errorMessage = '图片加载失败，请检查模板资源。'): Promise<HTMLImageElement> {
@@ -81,34 +89,41 @@ export function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: 
 function fitText(ctx: CanvasRenderingContext2D, text: string, field: EditableTextField, style: TextStyleSettings, imageHeight: number) {
   const pixelMax = resolveSizeForImage(Math.min(style.fontSize, style.maxFontSize), imageHeight);
   const pixelMin = resolveSizeForImage(12, imageHeight);
+  const contentBox = getTextContentBox(field.width, field.height, imageHeight);
   let fontSize = pixelMax;
   let lines: string[] = [];
-  let lineHeight = fontSize * 1.12;
+  let lineHeight = fontSize * TEXT_LINE_HEIGHT_RATIO;
 
   while (fontSize >= pixelMin) {
     ctx.font = getCanvasFont(style, fontSize);
-    lineHeight = fontSize * 1.12;
-    lines = wrapText(ctx, text, field.width);
+    lineHeight = fontSize * TEXT_LINE_HEIGHT_RATIO;
+    lines = wrapText(ctx, text, contentBox.width);
 
-    if (lines.length * lineHeight <= field.height) {
+    if (lines.length * lineHeight <= contentBox.height) {
       break;
     }
 
     fontSize -= 2;
   }
 
-  const maxLines = Math.max(1, Math.floor(field.height / lineHeight));
-  return { fontSize, lineHeight, lines: lines.slice(0, maxLines) };
+  const maxLines = Math.max(1, Math.floor(contentBox.height / lineHeight));
+  return { fontSize, lineHeight, lines: lines.slice(0, maxLines), contentBox };
 }
 
-function getStartY(field: EditableTextField, totalHeight: number, lineHeight: number, verticalAlign: TextStyleSettings['verticalAlign']) {
+function getStartY(
+  field: EditableTextField,
+  totalHeight: number,
+  lineHeight: number,
+  verticalAlign: TextStyleSettings['verticalAlign'],
+  padding: number,
+) {
   // Coordinates are local to the field's center (see drawTextField's translate).
   if (verticalAlign === 'top') {
-    return -field.height / 2 + lineHeight / 2;
+    return -field.height / 2 + padding + lineHeight / 2;
   }
 
   if (verticalAlign === 'bottom') {
-    return field.height / 2 - totalHeight + lineHeight / 2;
+    return field.height / 2 - padding - totalHeight + lineHeight / 2;
   }
 
   return -totalHeight / 2 + lineHeight / 2;
@@ -117,15 +132,15 @@ function getStartY(field: EditableTextField, totalHeight: number, lineHeight: nu
 export function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField, imageHeight: number) {
   const style = resolveTextStyle(field);
   const text = style.uppercase ? field.text.toUpperCase() : field.text;
-  const { fontSize, lineHeight, lines } = fitText(ctx, text, field, style, imageHeight);
+  const { fontSize, lineHeight, lines, contentBox } = fitText(ctx, text, field, style, imageHeight);
   const totalHeight = lines.length * lineHeight;
-  const startY = getStartY(field, totalHeight, lineHeight, style.verticalAlign);
+  const startY = getStartY(field, totalHeight, lineHeight, style.verticalAlign, contentBox.padding);
   // x is also relative to the field's center.
   const x =
     style.textAlign === 'left'
-      ? -field.width / 2
+      ? -field.width / 2 + contentBox.padding
       : style.textAlign === 'right'
-        ? field.width / 2
+        ? field.width / 2 - contentBox.padding
         : 0;
   const rotation = field.rotation ?? 0;
   // Outline / shadow widths are stored on the REFERENCE_IMAGE_HEIGHT scale, same as fontSize.
@@ -159,7 +174,7 @@ export function drawTextField(ctx: CanvasRenderingContext2D, field: EditableText
     const y = startY + index * lineHeight;
 
     if (style.effect === 'outline' && style.outlineWidth > 0) {
-      ctx.strokeText(line, x, y, field.width);
+      ctx.strokeText(line, x, y, contentBox.width);
     }
 
     if (style.effect === 'glow') {
@@ -172,12 +187,12 @@ export function drawTextField(ctx: CanvasRenderingContext2D, field: EditableText
       ctx.lineWidth = glowLineWidth;
       ctx.strokeStyle = style.outlineColor;
       for (let i = 0; i < 3; i += 1) {
-        ctx.strokeText(line, x, y, field.width);
+        ctx.strokeText(line, x, y, contentBox.width);
       }
       ctx.restore();
     }
 
-    ctx.fillText(line, x, y, field.width);
+    ctx.fillText(line, x, y, contentBox.width);
   });
 
   ctx.restore();

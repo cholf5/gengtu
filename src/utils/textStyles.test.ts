@@ -3,8 +3,11 @@ import type { MemeTextField } from '../types';
 import {
   DEFAULT_TEXT_STYLE,
   REFERENCE_IMAGE_HEIGHT,
+  TEXT_FIELD_PADDING,
+  TEXT_LINE_HEIGHT_RATIO,
   createEditableFields,
   getPreviewTextStyle,
+  getTextContentBox,
   resolveSizeForImage,
   resolveTextStyle,
 } from './textStyles';
@@ -92,6 +95,17 @@ describe('resolveSizeForImage', () => {
   });
 });
 
+describe('getTextContentBox', () => {
+  it('uses the same scaled padding as the preview text box', () => {
+    const box = getTextContentBox(487, 652, 1529);
+    const padding = resolveSizeForImage(TEXT_FIELD_PADDING, 1529);
+
+    expect(box.padding).toBe(padding);
+    expect(box.width).toBe(487 - padding * 2);
+    expect(box.height).toBe(652 - padding * 2);
+  });
+});
+
 describe('getPreviewTextStyle', () => {
   it('produces the same CSS pixel font size for the same stored fontSize when the on-screen size is held constant', () => {
     // Same image displayed at 360 CSS pixels wide, but two different source resolutions.
@@ -110,6 +124,13 @@ describe('getPreviewTextStyle', () => {
     const exceedsCap = { ...DEFAULT_TEXT_STYLE, fontSize: 200 };
     const taller = getPreviewTextStyle(exceedsCap, 1, REFERENCE_IMAGE_HEIGHT * 2);
     expect(taller.fontSize).toBe(`${DEFAULT_TEXT_STYLE.maxFontSize * 2}px`);
+  });
+
+  it('uses the shared text-box padding and line height constants', () => {
+    const preview = getPreviewTextStyle(DEFAULT_TEXT_STYLE, 0.5, REFERENCE_IMAGE_HEIGHT * 2);
+
+    expect(preview.lineHeight).toBe(TEXT_LINE_HEIGHT_RATIO);
+    expect(preview.padding).toBe(`${TEXT_FIELD_PADDING}px`);
   });
 
   it('draws outline strokes behind the fill so they do not overlap the glyph body', () => {
