@@ -1,0 +1,36 @@
+{
+  "id": "Meloni-Slap-Trump",
+  "name": "Meloni Slap Trump",
+  "url": "/memes/meloni-slap-trump.png",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Text 1",
+      "x": 76,
+      "y": 65,
+      "width": 437,
+      "height": 217,
+      "fontSize": 48,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "none"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 675,
+      "y": 69,
+      "width": 437,
+      "height": 217,
+      "fontSize": 48,
+      "color": "#000000",
+      "align": "center",
+      "bold": false,
+      "uppercase": false,
+      "effect": "none"
+    }
+  ]
+}
