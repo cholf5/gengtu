@@ -111,4 +111,10 @@ describe('getPreviewTextStyle', () => {
     const taller = getPreviewTextStyle(exceedsCap, 1, REFERENCE_IMAGE_HEIGHT * 2);
     expect(taller.fontSize).toBe(`${DEFAULT_TEXT_STYLE.maxFontSize * 2}px`);
   });
+
+  it('draws outline strokes behind the fill so they do not overlap the glyph body', () => {
+    const outline = getPreviewTextStyle({ ...DEFAULT_TEXT_STYLE, effect: 'outline', outlineWidth: 3 }, 1, REFERENCE_IMAGE_HEIGHT);
+    expect(outline.WebkitTextStroke).toBe('3px #000000');
+    expect(outline.paintOrder).toBe('stroke fill');
+  });
 });

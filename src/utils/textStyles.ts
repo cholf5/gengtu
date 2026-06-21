@@ -154,6 +154,7 @@ export function getPreviewTextStyle(style: TextStyleSettings, previewScale: numb
     opacity: style.opacity,
     textAlign: style.textAlign,
     WebkitTextStroke: style.effect === 'outline' ? `${strokeWidth}px ${style.outlineColor}` : undefined,
+    paintOrder: style.effect === 'outline' ? 'stroke fill' : undefined,
     textShadow: glowShadow ?? dropShadow ?? undefined,
   };
 }
