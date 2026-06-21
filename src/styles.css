@@ -390,12 +390,18 @@ body {
 
 .control-panel {
   display: grid;
+  min-width: 0;
   gap: 14px;
+}
+
+.control-panel .ant-alert-message {
+  overflow-wrap: anywhere;
 }
 
 .inspector-panel {
   max-height: calc(100vh - 96px);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .full-width-stack {
