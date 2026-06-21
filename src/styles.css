@@ -345,6 +345,49 @@ body {
   align-items: flex-end;
 }
 
+/* ---------- Caption generator ---------- */
+
+.caption-preview,
+.caption-preview-empty {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--color-image-placeholder);
+}
+
+.caption-preview-base {
+  position: relative;
+}
+
+.caption-preview img,
+.caption-preview-empty img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+.caption-line-overlay {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.caption-repeat-block {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-repeat: no-repeat;
+}
+
+.caption-preview-empty {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 20px;
+}
+
 /* ---------- Inspector panel ---------- */
 
 .control-panel {

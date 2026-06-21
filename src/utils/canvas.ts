@@ -2,16 +2,16 @@ import type { EditableTextField, MemeTemplate, TextStyleOptions, TextStyleSettin
 import { createEditableFields, DEFAULT_TEXT_STYLE, getCanvasFont, resolveSizeForImage, resolveTextStyle } from './textStyles';
 import { drawWatermark } from './watermark';
 
-function loadImage(src: string): Promise<HTMLImageElement> {
+export function loadImage(src: string, errorMessage = '图片加载失败，请检查模板资源。'): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error('图片加载失败，请检查模板资源。'));
+    image.onerror = () => reject(new Error(errorMessage));
     image.src = src;
   });
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+export function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (!blob) {
@@ -114,7 +114,7 @@ function getStartY(field: EditableTextField, totalHeight: number, lineHeight: nu
   return -totalHeight / 2 + lineHeight / 2;
 }
 
-function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField, imageHeight: number) {
+export function drawTextField(ctx: CanvasRenderingContext2D, field: EditableTextField, imageHeight: number) {
   const style = resolveTextStyle(field);
   const text = style.uppercase ? field.text.toUpperCase() : field.text;
   const { fontSize, lineHeight, lines } = fitText(ctx, text, field, style, imageHeight);

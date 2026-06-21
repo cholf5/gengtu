@@ -33,12 +33,14 @@ const FONT_STACK = "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, 
 const FONT_WEIGHT = 400;
 const COLOR = '#CECECE';
 
+export type WatermarkPosition = 'bottom-right' | 'top-right';
+
 export interface WatermarkLayout {
   /** Right edge of the text, in canvas pixels (= imageWidth - padding). */
   rightX: number;
   /** Vertical baseline center of the text, in canvas pixels. */
   centerY: number;
-  /** Distance from the right and bottom edges of the canvas. */
+  /** Distance from the nearest right/vertical edge of the canvas. */
   padding: number;
   /** Text font size, in canvas pixels. */
   fontSize: number;
@@ -56,13 +58,14 @@ export interface WatermarkLayout {
 export function computeWatermarkLayout(
   imageWidth: number,
   imageHeight: number,
+  position: WatermarkPosition = 'bottom-right',
 ): WatermarkLayout {
   const fontSize = imageHeight * HEIGHT_RATIO;
   const padding = imageHeight * PADDING_RATIO;
   const shadowBlur = imageHeight * SHADOW_BLUR_RATIO;
   const shadowOffset = imageHeight * SHADOW_OFFSET_RATIO;
   const rightX = imageWidth - padding;
-  const centerY = imageHeight - padding - fontSize / 2;
+  const centerY = position === 'top-right' ? padding + fontSize / 2 : imageHeight - padding - fontSize / 2;
   return { rightX, centerY, padding, fontSize, shadowBlur, shadowOffset };
 }
 
@@ -73,8 +76,9 @@ export function computeWatermarkLayout(
 export function drawWatermark(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
+  position: WatermarkPosition = 'bottom-right',
 ): void {
-  const layout = computeWatermarkLayout(canvas.width, canvas.height);
+  const layout = computeWatermarkLayout(canvas.width, canvas.height, position);
 
   ctx.save();
   ctx.fillStyle = COLOR;
@@ -97,7 +101,7 @@ export function drawWatermark(
  * `previewHeightPx` is the displayed height of the image in CSS pixels —
  * usually `imageNaturalHeight * previewScale` from `useImagePreviewScale`.
  */
-export function getWatermarkPreviewStyle(previewHeightPx: number): CSSProperties {
+export function getWatermarkPreviewStyle(previewHeightPx: number, position: WatermarkPosition = 'bottom-right'): CSSProperties {
   const fontSize = previewHeightPx * HEIGHT_RATIO;
   const padding = previewHeightPx * PADDING_RATIO;
   const shadowBlur = previewHeightPx * SHADOW_BLUR_RATIO;
@@ -106,7 +110,8 @@ export function getWatermarkPreviewStyle(previewHeightPx: number): CSSProperties
   return {
     position: 'absolute',
     right: `${padding}px`,
-    bottom: `${padding}px`,
+    top: position === 'top-right' ? `${padding}px` : undefined,
+    bottom: position === 'bottom-right' ? `${padding}px` : undefined,
     color: COLOR,
     fontFamily: FONT_STACK,
     fontWeight: FONT_WEIGHT,

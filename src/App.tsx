@@ -3,6 +3,7 @@ import { Button, ConfigProvider, Layout, Space, Typography, theme as antdTheme }
 import { PlusOutlined } from '@ant-design/icons';
 import { Analytics, track } from '@vercel/analytics/react';
 import { About } from './components/About';
+import { CaptionGenerator } from './components/CaptionGenerator';
 import { Gallery } from './components/Gallery';
 import { MemeEditor } from './components/MemeEditor';
 import { TemplateConfigurator } from './components/TemplateConfigurator';
@@ -20,10 +21,13 @@ import {
   type TemplateUsageMap,
 } from './utils/templateUsage';
 
-function getViewFromLocation(): 'gallery' | 'create' | 'about' {
+type AppView = 'gallery' | 'create' | 'about' | 'caption';
+
+function getViewFromLocation(): AppView {
   const path = window.location.pathname;
   if (path.endsWith('/create')) return 'create';
   if (path.endsWith('/about')) return 'about';
+  if (path.endsWith('/caption')) return 'caption';
   return 'gallery';
 }
 
@@ -39,7 +43,7 @@ function buildHref(query?: string) {
 
 function App() {
   const { mode: themeMode, resolved: resolvedTheme, setMode: setThemeMode } = useThemeMode();
-  const [view, setView] = useState<'gallery' | 'create' | 'about'>(() => getViewFromLocation());
+  const [view, setView] = useState<AppView>(() => getViewFromLocation());
   const [selectedTemplate, setSelectedTemplate] = useState<MemeTemplate | null>(null);
   const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(() =>
     getTemplateIdFromLocation(),
@@ -144,6 +148,14 @@ function App() {
     setView('create');
   };
 
+  const openCaption = () => {
+    window.history.pushState({}, '', `${import.meta.env.BASE_URL.replace(/\/$/, '')}/caption`);
+    setSelectedTemplate(null);
+    setPendingTemplateId(null);
+    setView('caption');
+    track('caption_open');
+  };
+
   const buildAboutHref = (hash?: string) => {
     const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     return `${base}/about${hash ? `#${hash}` : ''}`;
@@ -194,8 +206,9 @@ function App() {
               <Typography.Text className="app-brand-eyebrow">精选模板，一键成梗</Typography.Text>
             </div>
           </button>
-          <Space size={8}>
+          <Space size={8} wrap>
             <ThemeToggle mode={themeMode} onChange={setThemeMode} />
+            <Button onClick={openCaption}>连续字幕</Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
               Create template
             </Button>
@@ -204,6 +217,8 @@ function App() {
         <Layout.Content className="app-content">
           {view === 'create' ? (
             <TemplateConfigurator onBack={goHome} />
+          ) : view === 'caption' ? (
+            <CaptionGenerator onBack={goHome} />
           ) : view === 'about' ? (
             <About onBack={goHome} onOpenCreate={openCreate} />
           ) : selectedTemplate ? (

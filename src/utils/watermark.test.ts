@@ -27,11 +27,18 @@ describe('computeWatermarkLayout', () => {
     expect(layout.rightX).toBeCloseTo(width - layout.padding);
   });
 
-  it('places the text vertical center one (padding + fontSize/2) above bottom edge', () => {
+  it('places the text vertical center one (padding + fontSize/2) above bottom edge by default', () => {
     const width = 1200;
     const height = 1000;
     const layout = computeWatermarkLayout(width, height);
     expect(layout.centerY + layout.padding + layout.fontSize / 2).toBeCloseTo(height);
+  });
+
+  it('can place the text vertical center one (padding + fontSize/2) below top edge', () => {
+    const width = 1200;
+    const height = 1000;
+    const layout = computeWatermarkLayout(width, height, 'top-right');
+    expect(layout.centerY).toBeCloseTo(layout.padding + layout.fontSize / 2);
   });
 
   it('keeps shadowBlur at 0.15% of imageHeight', () => {
