@@ -24,6 +24,7 @@ import {
 } from '../utils/textStyles';
 import { useUndoableState } from '../utils/useUndoableState';
 import { useUndoKeyboard } from '../utils/useUndoKeyboard';
+import { duplicateTextField } from '../utils/templateConfigurator';
 import { SelectedTextInspector } from './SelectedTextInspector';
 import { TextFieldsPreview } from './TextFieldsPreview';
 
@@ -152,6 +153,17 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
 
     setFields((current) => [...current, field]);
     setSelectedFieldId(field.id);
+    markEdited();
+  };
+
+  const duplicateSelectedField = () => {
+    if (!selectedField) {
+      return;
+    }
+
+    const copy = duplicateTextField(selectedField, fields, imageSize);
+    setFields((current) => [...current, copy]);
+    setSelectedFieldId(copy.id);
     markEdited();
   };
 
@@ -336,6 +348,7 @@ export function MemeEditor({ template, onBack }: MemeEditorProps) {
               onTextChange={(value) => setFieldValue(selectedField.id, value)}
               onRotationChange={(value) => setFieldRotation(selectedField.id, value)}
               onStyleChange={(key, value) => setFieldStyle(selectedField.id, key, value)}
+              onDuplicate={duplicateSelectedField}
               onRemove={removeSelectedField}
               onBringToTop={bringSelectedToTop}
               onApplyToAll={applySelectedStyleToAll}

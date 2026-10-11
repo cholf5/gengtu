@@ -58,6 +58,9 @@ const DUPLICATE_OFFSET = 16;
  * stacked above every existing field. The new id / placeholder follow the same
  * `text_N` / `Text N` convention as freshly added fields — N is the next unused index
  * across `allFields`, so duplicating is indistinguishable from "Add text box" id-wise.
+ * The source's current `text` is carried over so the copy is a faithful duplicate;
+ * in the configurator that equals the placeholder anyway, while the editor keeps
+ * whatever the user has typed.
  */
 export function duplicateTextField(
   source: EditableTextField,
@@ -83,7 +86,7 @@ export function duplicateTextField(
     ...source,
     id,
     placeholder,
-    text: placeholder,
+    text: source.text,
     x: offset.x,
     y: offset.y,
     width: offset.width,

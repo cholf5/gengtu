@@ -1,5 +1,5 @@
 import { Button, Card, Col, Form, Input, InputNumber, Row, Slider, Space, Typography } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { CopyOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { EditableTextField, TextStyleSettings } from '../types';
 import { TextStyleInspector } from './TextStyleInspector';
 
@@ -9,6 +9,7 @@ interface SelectedTextInspectorProps {
   onTextChange: (value: string) => void;
   onRotationChange: (value: number) => void;
   onStyleChange: <K extends keyof TextStyleSettings>(key: K, value: TextStyleSettings[K]) => void;
+  onDuplicate: () => void;
   onRemove: () => void;
   onBringToTop: () => void;
   onApplyToAll: () => void;
@@ -20,6 +21,7 @@ export function SelectedTextInspector({
   onTextChange,
   onRotationChange,
   onStyleChange,
+  onDuplicate,
   onRemove,
   onBringToTop,
   onApplyToAll,
@@ -29,9 +31,14 @@ export function SelectedTextInspector({
       size="small"
       title={<Typography.Text strong>Text Inspector</Typography.Text>}
       extra={
-        <Button danger type="text" size="small" icon={<DeleteOutlined />} onClick={onRemove}>
-          remove
-        </Button>
+        <Space size={4}>
+          <Button type="text" size="small" icon={<CopyOutlined />} onClick={onDuplicate}>
+            duplicate
+          </Button>
+          <Button danger type="text" size="small" icon={<DeleteOutlined />} onClick={onRemove}>
+            remove
+          </Button>
+        </Space>
       }
     >
       <Space direction="vertical" size={10} className="full-width-stack">

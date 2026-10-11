@@ -200,12 +200,12 @@ describe('template configurator helpers', () => {
   describe('duplicateTextField', () => {
     const imageSize = { width: 1000, height: 500 };
 
-    it('uses the next free text_N index for id and Text N for placeholder/text', () => {
+    it('uses the next free text_N index for id/placeholder and keeps the source text', () => {
       const copy = duplicateTextField(field, [field], imageSize);
       expect(copy).toMatchObject({
         id: 'text_2',
         placeholder: 'Text 2',
-        text: 'Text 2',
+        text: 'Text 1',
         x: 26.2, // 10.2 + 16 offset
         y: 36.6, // 20.6 + 16 offset
         width: 100.4,
@@ -213,6 +213,12 @@ describe('template configurator helpers', () => {
         rotation: 0,
         zIndex: 2,
       });
+    });
+
+    it('keeps edited text so the duplicate is a faithful copy', () => {
+      const edited: EditableTextField = { ...field, text: 'when you finally understand' };
+      const copy = duplicateTextField(edited, [edited], imageSize);
+      expect(copy.text).toBe('when you finally understand');
     });
 
     it('fills gaps in the text_N sequence rather than always appending', () => {
