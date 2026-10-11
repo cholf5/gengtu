@@ -1,0 +1,25 @@
+{
+  "id": "do-you-guys-not-have-phone",
+  "name": "do-you-guys-not-have-phone",
+  "url": "/memes/do-you-guys-not-have-phone.webp",
+  "tags": [
+    "phone",
+    "blizzard",
+    "diablo"
+  ],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Do you guys not have phones?",
+      "x": 36,
+      "y": 2105,
+      "width": 5084,
+      "height": 775,
+      "fontSize": 95,
+      "color": "#ffffff",
+      "align": "center",
+      "outlineWidth": 5,
+      "maxFontSize": 180
+    }
+  ]
+}
