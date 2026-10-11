@@ -89,11 +89,24 @@ export async function loadMemeTemplates(): Promise<MemeTemplate[]> {
         return null;
       }
       const thumbnail = validateThumbnail((entry as { thumbnail?: unknown }).thumbnail, entry.id);
-      const { thumbnail: _stripped, ...rest } = entry as MemeTemplate & { thumbnail?: unknown };
+      // `thumbUrl` is injected by the manifest plugin (never present in source
+      // JSONs); treat it as optional and resolve it like `url`.
+      const thumbUrl =
+        typeof (entry as { thumbUrl?: unknown }).thumbUrl === 'string'
+          ? (entry as { thumbUrl: string }).thumbUrl
+          : undefined;
+      const { thumbnail: _stripped, thumbUrl: _thumb, ...rest } = entry as MemeTemplate & {
+        thumbnail?: unknown;
+        thumbUrl?: unknown;
+      };
       void _stripped;
+      void _thumb;
       const next: MemeTemplate = { ...rest, url: resolveTemplateImageUrl(entry.url, import.meta.env.BASE_URL) };
       if (thumbnail) {
         next.thumbnail = thumbnail;
+      }
+      if (thumbUrl) {
+        next.thumbUrl = resolveTemplateImageUrl(thumbUrl, import.meta.env.BASE_URL);
       }
       return next;
     })

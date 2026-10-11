@@ -83,9 +83,12 @@ export function Gallery({
 }
 
 /**
- * Gallery card cover. When the template has a `thumbnail` crop we wrap the
- * image in a 4:3 container and scale + offset it via percentages so only the
- * chosen region is visible. No JS layout work, no naturalWidth needed.
+ * Gallery card cover. Always renders the build-generated WebP thumbnail
+ * (`thumbUrl`) when the manifest provides one — full originals are reserved
+ * for the editor/export so first paint stays light. When the template has a
+ * `thumbnail` crop we wrap the image in a 4:3 container and scale + offset it
+ * via percentages so only the chosen region is visible. No JS layout work, no
+ * naturalWidth needed.
  *
  * `width` / `height` percentages are relative to the parent's width / height
  * respectively, but `margin-top` percentages are also resolved against parent
@@ -95,15 +98,16 @@ export function Gallery({
  * exactly cancels the scaling and works for any aspect ratio.
  */
 function renderTemplateCover(template: MemeTemplate) {
+  const src = template.thumbUrl ?? template.url;
   const crop = template.thumbnail;
   if (!crop) {
-    return <img src={template.url} alt="" loading="lazy" className="template-cover" />;
+    return <img src={src} alt="" loading="lazy" className="template-cover" />;
   }
 
   return (
     <div className="template-cover-crop">
       <img
-        src={template.url}
+        src={src}
         alt=""
         loading="lazy"
         style={{

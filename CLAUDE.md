@@ -43,11 +43,11 @@ The site is deployed at `https://gengtupu.vercel.app/` (root base). `import.meta
 
 Both the image (PNG/JPG/SVG) and the sibling JSON live side-by-side in `public/memes/`. They're treated as project assets, not code. Because `public/` is outside Vite's module graph, `import.meta.glob` doesn't apply — discovery goes through a manifest:
 
-- `vite-plugin-meme-manifest.ts` scans `public/memes/*.json` at `buildStart` and on dev `add` / `change` / `unlink`, and writes `public/memes/index.json` — **a single bundle that inlines every template's full JSON**. This matters: a per-template fetch model would death-by-RTT once the gallery has 100+ entries (HTTP/1.1 concurrency caps, TTFB stacking). The manifest is gitignored.
-- `src/memes/index.ts` exposes `async loadMemeTemplates()`: one fetch for the bundle, runs `isMemeTemplate` runtime validation per entry, prefixes `url` with `BASE_URL`, sorts by name. Invalid entries are warned to console and skipped, not thrown.
+- `vite-plugin-meme-manifest.ts` scans `public/memes/*.json` at `buildStart` and on dev `add` / `change` / `unlink` (JSON **and** image files), and generates two artifacts — `public/memes/index.json` (a single bundle that inlines every template's full JSON, so the client pays ONE fetch) and `public/memes/thumbs/*.webp` gallery thumbnails (fit inside 480×480, mtime-freshness cached; a `thumbUrl` field is injected per template into the manifest). Both artifacts are gitignored. Rationale: gallery cards must never download the multi-MB originals on first paint — `MemeTemplate.thumbUrl` feeds the card covers, while editor/canvas export keep using `url` at full resolution.
+- `src/memes/index.ts` exposes `async loadMemeTemplates()`: one fetch for the bundle, runs `isMemeTemplate` runtime validation per entry, prefixes `url` / `thumbUrl` with `BASE_URL`, sorts by name. Invalid entries are warned to console and skipped, not thrown.
 - `App.tsx` calls it once in an effect and stores the result in state.
 
-**To add a template:** drop both files into `public/memes/` — no registry edit, no manifest edit, the plugin handles it.
+**To add a template:** drop both files into `public/memes/` — no registry edit, no manifest edit, the plugin handles it (thumbnail included).
 
 ### Two text-field shapes — don't confuse them
 

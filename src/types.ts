@@ -33,6 +33,14 @@ export interface MemeTemplate {
   id: string;
   name: string;
   url: string;
+  /**
+   * Build-generated WebP thumbnail (fit inside 480×480) for the gallery card.
+   * Injected by the manifest plugin, never written into source JSONs; absent
+   * when the source image was missing or thumbnail encoding failed, in which
+   * case the card falls back to `url`. Only the gallery consumes this — the
+   * editor and canvas export always load `url` at full resolution.
+   */
+  thumbUrl?: string;
   tags: string[];
   /**
    * Optional crop rectangle for the Gallery card thumbnail, in 0..1 normalized
