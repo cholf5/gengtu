@@ -6,47 +6,64 @@
   "textFields": [
     {
       "id": "text_1",
-      "placeholder": "agents",
-      "x": 76,
-      "y": 118,
-      "width": 127,
-      "height": 37,
+      "placeholder": "DeepSeek V4.1 Flash",
+      "x": 0,
+      "y": 164,
+      "width": 133,
+      "height": 50,
       "fontSize": 48,
       "color": "#ffffff",
-      "align": "center"
+      "align": "center",
+      "uppercase": false
     },
     {
       "id": "text_2",
-      "placeholder": "skills",
-      "x": 191,
-      "y": 153,
-      "width": 127,
-      "height": 37,
+      "placeholder": "GLM 5.3",
+      "x": 102,
+      "y": 107,
+      "width": 133,
+      "height": 50,
       "fontSize": 48,
       "color": "#ffffff",
-      "align": "center"
+      "align": "center",
+      "uppercase": false
     },
     {
       "id": "text_3",
-      "placeholder": "loops",
-      "x": 295,
-      "y": 203,
-      "width": 127,
-      "height": 37,
+      "placeholder": "GPT 6 Astra",
+      "x": 192,
+      "y": 134,
+      "width": 133,
+      "height": 50,
       "fontSize": 48,
       "color": "#ffffff",
-      "align": "center"
+      "align": "center",
+      "uppercase": false
     },
     {
       "id": "text_4",
-      "placeholder": "slop",
-      "x": 397,
-      "y": 270,
-      "width": 99,
-      "height": 37,
+      "placeholder": "Opus 5.5",
+      "x": 304,
+      "y": 172,
+      "width": 116,
+      "height": 47,
       "fontSize": 48,
       "color": "#ffffff",
-      "align": "center"
+      "align": "center",
+      "uppercase": false
+    },
+    {
+      "id": "text_5",
+      "placeholder": "Slop",
+      "x": 409,
+      "y": 253,
+      "width": 87,
+      "height": 32,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "uppercase": false
     }
   ]
 }
+
