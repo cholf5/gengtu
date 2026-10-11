@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { Button, ConfigProvider, Layout, Space, Typography, theme as antdTheme } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { GithubFilled, PlusOutlined, XOutlined } from '@ant-design/icons';
 import { Analytics, track } from '@vercel/analytics/react';
 import { About } from './components/About';
 import { CaptionGenerator } from './components/CaptionGenerator';
@@ -243,8 +243,25 @@ function App() {
             <a href={buildAboutHref('submit')} onClick={handleAboutClick}>
               提交模板
             </a>
-            <a href="https://x.com/cholf5" target="_blank" rel="noreferrer noopener">
-              @cholf5
+            <a
+              className="app-footer-icon"
+              href="https://x.com/cholf5"
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="X @cholf5"
+              title="X @cholf5"
+            >
+              <XOutlined />
+            </a>
+            <a
+              className="app-footer-icon"
+              href="https://github.com/cholf5/gengtu"
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="GitHub 仓库"
+              title="GitHub 仓库"
+            >
+              <GithubFilled />
             </a>
           </nav>
         </Layout.Footer>
