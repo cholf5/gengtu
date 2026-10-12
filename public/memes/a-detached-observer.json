@@ -1,0 +1,57 @@
+{
+  "id": "a-detached-observer",
+  "name": "a detached observer",
+  "url": "/memes/a-detached-observer.webp",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "text 1",
+      "x": 132,
+      "y": 400,
+      "width": 432,
+      "height": 88,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "uppercase": false,
+      "effect": "glow"
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Text 2",
+      "x": 13,
+      "y": 49,
+      "width": 276,
+      "height": 84,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "uppercase": false
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Text 3",
+      "x": 211,
+      "y": 141,
+      "width": 276,
+      "height": 84,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "uppercase": false
+    },
+    {
+      "id": "text_4",
+      "placeholder": "Text 4",
+      "x": 434,
+      "y": 52,
+      "width": 276,
+      "height": 84,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "uppercase": false
+    }
+  ]
+}
