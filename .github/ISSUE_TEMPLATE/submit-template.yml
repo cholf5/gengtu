@@ -1,0 +1,43 @@
+name: 模板投稿
+description: 提交一个新的梗图模板（底图 + JSON），作者审核合入后上线
+title: '[模板投稿] '
+labels: ['投稿']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢投稿！最快路径：在站内 [Create template](https://gengtupu.vercel.app/create) 页配好模板后，点「Generated JSON」卡片的**去 GitHub 投稿**按钮 —— 会直接打开本表单并自动填好模板名和 JSON，你只需补底图。
+
+        **底图上传方式：把图片文件直接拖拽或粘贴到下方「底图」输入框**，GitHub 会自动转成附件链接。请不要只贴外部图床链接。
+  - type: input
+    id: name
+    attributes:
+      label: 模板名
+      description: 与 JSON 里的 name 字段保持一致（用站内投稿按钮会自动填入）。
+      placeholder: 例如 同志快醒醒
+    validations:
+      required: true
+  - type: textarea
+    id: image
+    attributes:
+      label: 底图
+      description: PNG / JPG，建议宽边 ≥ 600px。把图片文件直接拖进本输入框（或截图后 Ctrl/⌘ + V 粘贴），GitHub 会自动转成附件链接。
+      placeholder: 把图片拖到这里，会自动出现 ![](...) 形式的附件链接
+    validations:
+      required: true
+  - type: textarea
+    id: json
+    attributes:
+      label: 模板 JSON
+      description: 站内 Create template 页「Generated JSON」卡片的内容，原样粘贴到这里。
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: 素材说明
+      description: 底图来源、是否可公开使用（如：影视截图 / 网络流行图 / 自制 / 已获授权）。
+      placeholder: 例如：出自某电影截图，网络广泛流传
+    validations:
+      required: true

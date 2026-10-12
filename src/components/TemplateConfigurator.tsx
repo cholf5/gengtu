@@ -1,7 +1,8 @@
-import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, InboxOutlined, PlusOutlined, RedoOutlined, UndoOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CopyOutlined, DownloadOutlined, GithubFilled, InboxOutlined, PlusOutlined, RedoOutlined, UndoOutlined } from '@ant-design/icons';
 import { Alert, Button, Card, Form, Input, Space, Switch, Tooltip, Typography, Upload, message } from 'antd';
 import type { UploadProps } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { track } from '@vercel/analytics/react';
 import type { EditableTextField, MemeThumbnailCrop, TextStyleSettings } from '../types';
 import { useImagePreviewScale } from '../hooks/useImagePreviewScale';
 import {
@@ -23,6 +24,7 @@ import {
   stringifyTemplateJson,
 } from '../utils/templateConfigurator';
 import { buildImportedDraft, parseTemplateJson, resolveTemplateImageUrl } from '../utils/templateImport';
+import { buildSubmissionIssueUrl, SUBMISSION_ISSUE_PATH } from '../utils/submission';
 import { DEFAULT_TEXT_STYLE, getPreviewText, getPreviewTextStyle, getVerticalAlignClass, resolveTextStyle } from '../utils/textStyles';
 import { useUndoableState } from '../utils/useUndoableState';
 import { useUndoKeyboard } from '../utils/useUndoKeyboard';
@@ -508,6 +510,22 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
     URL.revokeObjectURL(href);
   };
 
+  const submitToGitHub = () => {
+    track('submit_issue_click', { from: 'configurator' });
+    const prefilled = buildSubmissionIssueUrl({ name: derived.name, json: jsonText });
+    // Open synchronously inside the click gesture so popup blockers don't eat it.
+    window.open(prefilled ?? SUBMISSION_ISSUE_PATH, '_blank', 'noopener,noreferrer');
+    if (prefilled) {
+      api.success('已打开 GitHub 投稿表单：模板名和 JSON 已自动填入，把底图拖进「底图」输入框、补一句素材说明即可提交。');
+      return;
+    }
+    // Prefill would blow GitHub's URL budget — hand the JSON over via the clipboard instead.
+    navigator.clipboard
+      .writeText(jsonText)
+      .then(() => api.info('JSON 较长无法自动填入，已复制到剪贴板 —— 请粘贴到表单的「模板 JSON」一栏。'))
+      .catch(() => api.error('JSON 较长无法自动填入，且剪贴板不可用 —— 请手动复制 JSON 后投稿。'));
+  };
+
   return (
     <section className="editor-layout" aria-label="Create template">
       {contextHolder}
@@ -698,7 +716,7 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
             onDuplicate={duplicateSelectedField}
           />
 
-          <Alert type="info" showIcon message="MVP only generates JSON. Put the image file under public/memes separately." />
+          <Alert type="info" showIcon message="站内只生成 JSON：底图在投稿表单里上传，点「去 GitHub 投稿」把两者一起提交，作者合入后自动上线。" />
 
           {warnings.length > 0 && <Alert type="warning" showIcon message="Template is incomplete" description={warnings.join(' ')} />}
 
@@ -717,6 +735,16 @@ export function TemplateConfigurator({ onBack }: TemplateConfiguratorProps) {
             }
           >
             <pre className="json-preview">{jsonText}</pre>
+            <Button
+              block
+              type="primary"
+              icon={<GithubFilled />}
+              onClick={submitToGitHub}
+              disabled={!derived.id}
+              style={{ marginTop: 12 }}
+            >
+              去 GitHub 投稿
+            </Button>
           </Card>
         </aside>
       </div>

@@ -2,13 +2,12 @@ import { useEffect } from 'react';
 import { Button, Card, Space, Typography } from 'antd';
 import { GithubFilled } from '@ant-design/icons';
 import { track } from '@vercel/analytics/react';
+import { REPO_URL, SUBMISSION_ISSUE_PATH } from '../utils/submission';
 
 interface AboutProps {
   onBack: () => void;
   onOpenCreate: () => void;
 }
-
-const REPO_URL = 'https://github.com/cholf5/gengtu';
 
 export function About({ onOpenCreate }: AboutProps) {
   // 首屏按 hash 滚到对应区块；空 hash 时正常顶到「关于本站」。
@@ -20,7 +19,7 @@ export function About({ onOpenCreate }: AboutProps) {
   }, []);
 
   const handleSubmitClick = () => {
-    track('submit_pr_click');
+    track('submit_issue_click', { from: 'about' });
   };
 
   return (
@@ -53,44 +52,44 @@ export function About({ onOpenCreate }: AboutProps) {
 
         <Card id="submit" title="提交模板">
           <Typography.Paragraph style={{ marginBottom: 12 }}>
-            想看到的梗图模板这里没有？本站已在 GitHub 开源，欢迎直接提交 PR。为了我能直接
-            merge、立刻上线，请先在站内
-            <Typography.Link onClick={onOpenCreate}> 「Create template」 </Typography.Link>
-            页里配好文字框、导出 JSON，再把底图和 JSON 一起放进仓库的{' '}
-            <code>public/memes/</code> 目录。
+            想看到的梗图模板这里没有？本站已在 GitHub 开源，欢迎投稿 —— 填一个 issue
+            表单就行，不需要 fork，不需要会 git。
           </Typography.Paragraph>
           <Typography.Paragraph style={{ marginBottom: 8 }}>具体步骤：</Typography.Paragraph>
           <ol style={{ margin: '0 0 16px', paddingLeft: 20, lineHeight: 1.9 }}>
             <li>
               打开 <Typography.Link onClick={onOpenCreate}>Create template</Typography.Link>
-              ，上传底图（PNG / JPG，建议宽边 ≥ 600px），起个模板名，加 2–3 个标签。
-            </li>
-            <li>在预览图上拖出文字框、调好默认字号 / 颜色 / 对齐。</li>
-            <li>
-              在右侧「Generated JSON」卡片点 <strong>Download</strong>，得到 <code>.json</code>{' '}
-              文件。
+              ，上传底图（PNG / JPG，建议宽边 ≥ 600px），起个模板名，加 2–3 个标签，在预览图上拖出文字框、调好默认样式。
             </li>
             <li>
-              Fork 仓库后，把 <code>.json</code> 和底图一起传进{' '}
-              <code>public/memes/</code> 目录，发起 PR —— GitHub
-              网页端「Add file → Upload files」上传即可，不需要会 git。两个文件保持同名、只差扩展名（底图照着{' '}
-              <code>.json</code> 的文件名改就行，如 <code>distracted-boyfriend.jpg</code> 配{' '}
-              <code>distracted-boyfriend.json</code>）。
+              在右侧「Generated JSON」卡片点 <strong>去 GitHub 投稿</strong>
+              ，会打开投稿表单，模板名和 JSON 已自动填好。
             </li>
-            <li>PR 描述里顺手附一句素材说明（来源、是否可公开使用），就齐活了 —— merge 后自动上线。</li>
+            <li>
+              把底图文件直接拖进表单的「底图」输入框（GitHub
+              会自动转成附件链接），再补一句素材说明（来源、是否可公开使用），提交就齐活了。
+            </li>
+            <li>我看到后会合入仓库，自动上线。</li>
           </ol>
           <Space wrap size={12} align="center">
             <Button
               type="primary"
               icon={<GithubFilled />}
-              href={`${REPO_URL}/fork`}
+              href={SUBMISSION_ISSUE_PATH}
               target="_blank"
               rel="noreferrer noopener"
               onClick={handleSubmitClick}
             >
-              前往 GitHub 提交 PR
+              前往 GitHub 投稿
             </Button>
           </Space>
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 0, marginTop: 12, fontSize: 13 }}>
+            熟悉 Git 的话也可以直接 fork 仓库，把底图和 JSON 放进 <code>public/memes/</code> 提{' '}
+            <Typography.Link href={`${REPO_URL}/fork`} target="_blank" rel="noreferrer noopener">
+              PR
+            </Typography.Link>
+            ，合并即上线。
+          </Typography.Paragraph>
         </Card>
 
         <Card id="author" title="关于作者">

@@ -26,6 +26,12 @@ npm run dev
 npm run build
 ```
 
+## 投稿模板
+
+想补一个这里没有的模板？不需要会 Git：在站内 [Create template](https://gengtupu.vercel.app/create) 页配好文字框、生成 JSON，点「去 GitHub 投稿」—— 会打开预填好的[投稿表单](https://github.com/cholf5/gengtu/issues/new?template=submit-template.yml)，把底图拖进表单、补一句素材说明即可提交。作者审核合入后自动上线。
+
+熟悉 Git 的话也可以直接 fork，把图片和同名 JSON 放进 `public/memes/` 提 PR。
+
 ## 添加模板（仅作者）
 
 模板由作者本人维护，图片和 JSON 都放在 `public/memes/`：
