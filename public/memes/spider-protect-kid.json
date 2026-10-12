@@ -1,0 +1,44 @@
+{
+  "id": "spider-protect-kid",
+  "name": "spider-protect-kid",
+  "url": "/memes/spider-protect-kid.jpg",
+  "tags": [],
+  "textFields": [
+    {
+      "id": "text_1",
+      "placeholder": "Codex Users",
+      "x": 0,
+      "y": 200,
+      "width": 928,
+      "height": 300,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "uppercase": false
+    },
+    {
+      "id": "text_2",
+      "placeholder": "Tibo",
+      "x": 62,
+      "y": 728,
+      "width": 928,
+      "height": 300,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "uppercase": false
+    },
+    {
+      "id": "text_3",
+      "placeholder": "Sam Altman",
+      "x": 405,
+      "y": 1440,
+      "width": 731,
+      "height": 213,
+      "fontSize": 48,
+      "color": "#ffffff",
+      "align": "center",
+      "uppercase": false
+    }
+  ]
+}
