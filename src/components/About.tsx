@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Button, Card, Space, Typography } from 'antd';
-import { MailOutlined } from '@ant-design/icons';
+import { GithubFilled } from '@ant-design/icons';
 import { track } from '@vercel/analytics/react';
 
 interface AboutProps {
@@ -8,31 +8,7 @@ interface AboutProps {
   onOpenCreate: () => void;
 }
 
-// 拆成片段 + 字符码，运行时拼。源码里搜不到完整字符串，挡掉常见正则爬虫。
-const EMAIL_USER = ['cho', 'lf', '5'].join('');
-const EMAIL_HOST = String.fromCharCode(104, 111, 116, 109, 97, 105, 108) + '.com'; // hotmail.com
-
-const buildMailto = () => {
-  const addr = `${EMAIL_USER}@${EMAIL_HOST}`;
-  const subject = encodeURIComponent('[梗图铺投稿] ');
-  const body = encodeURIComponent(
-    [
-      '模板名：',
-      '',
-      '附件清单（请一并附上）：',
-      '  1. 底图：PNG / JPG，建议宽边 ≥ 600px',
-      '  2. 模板 JSON：在「Create template」页面配好文字框后，点右侧「Generated JSON」卡片的 Download 得到的文件',
-      '',
-      '素材说明（来源 / 是否可公开使用）：',
-      '',
-      '其他备注（可选）：',
-    ].join('\n'),
-  );
-  return `mailto:${addr}?subject=${subject}&body=${body}`;
-};
-
-// 用户可读但难以被爬虫整段匹配的提示形态。
-const EMAIL_DISPLAY = `${EMAIL_USER} [at] ${EMAIL_HOST.replace('.', ' · ')}`;
+const REPO_URL = 'https://github.com/cholf5/gengtu';
 
 export function About({ onOpenCreate }: AboutProps) {
   // 首屏按 hash 滚到对应区块；空 hash 时正常顶到「关于本站」。
@@ -44,8 +20,7 @@ export function About({ onOpenCreate }: AboutProps) {
   }, []);
 
   const handleSubmitClick = () => {
-    track('submit_template_click');
-    window.location.href = buildMailto();
+    track('submit_pr_click');
   };
 
   return (
@@ -78,9 +53,11 @@ export function About({ onOpenCreate }: AboutProps) {
 
         <Card id="submit" title="提交模板">
           <Typography.Paragraph style={{ marginBottom: 12 }}>
-            想看到的梗图模板这里没有？欢迎投稿。为了我能直接收下、立刻上线，请先在站内
+            想看到的梗图模板这里没有？本站已在 GitHub 开源，欢迎直接提交 PR。为了我能直接
+            merge、立刻上线，请先在站内
             <Typography.Link onClick={onOpenCreate}> 「Create template」 </Typography.Link>
-            页里配好文字框、导出 JSON，再把底图和 JSON 一起发邮件给我。
+            页里配好文字框、导出 JSON，再把底图和 JSON 一起放进仓库的{' '}
+            <code>public/memes/</code> 目录。
           </Typography.Paragraph>
           <Typography.Paragraph style={{ marginBottom: 8 }}>具体步骤：</Typography.Paragraph>
           <ol style={{ margin: '0 0 16px', paddingLeft: 20, lineHeight: 1.9 }}>
@@ -90,18 +67,29 @@ export function About({ onOpenCreate }: AboutProps) {
             </li>
             <li>在预览图上拖出文字框、调好默认字号 / 颜色 / 对齐。</li>
             <li>
-              在右侧「Generated JSON」卡片点 <strong>Download</strong>，把得到的{' '}
-              <code>.json</code> 文件和底图一起作为附件发邮件给我。
+              在右侧「Generated JSON」卡片点 <strong>Download</strong>，得到 <code>.json</code>{' '}
+              文件。
             </li>
-            <li>顺手附一句素材说明（来源、是否可公开使用），就齐活了。</li>
+            <li>
+              Fork 仓库后，把 <code>.json</code> 和底图一起传进{' '}
+              <code>public/memes/</code> 目录，发起 PR —— GitHub
+              网页端「Add file → Upload files」上传即可，不需要会 git。两个文件保持同名、只差扩展名（底图照着{' '}
+              <code>.json</code> 的文件名改就行，如 <code>distracted-boyfriend.jpg</code> 配{' '}
+              <code>distracted-boyfriend.json</code>）。
+            </li>
+            <li>PR 描述里顺手附一句素材说明（来源、是否可公开使用），就齐活了 —— merge 后自动上线。</li>
           </ol>
           <Space wrap size={12} align="center">
-            <Button type="primary" icon={<MailOutlined />} onClick={handleSubmitClick}>
-              邮件投稿
+            <Button
+              type="primary"
+              icon={<GithubFilled />}
+              href={`${REPO_URL}/fork`}
+              target="_blank"
+              rel="noreferrer noopener"
+              onClick={handleSubmitClick}
+            >
+              前往 GitHub 提交 PR
             </Button>
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              {EMAIL_DISPLAY}
-            </Typography.Text>
           </Space>
         </Card>
 
